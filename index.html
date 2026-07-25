@@ -4,31 +4,600 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Nutrição App</title>
+  <style>
+    body { font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 16px; }
+    input, select, button { font-size: 16px; padding: 8px; margin: 4px 0; width: 100%; box-sizing: border-box; }
+    button { background: #2e7d32; color: white; border: none; border-radius: 6px; }
+    #sugestoes div, #favoritos div { padding: 8px; border-bottom: 1px solid #ddd; }
+    #favoritos div { background: #fff8e1; cursor: pointer; }
+    #itens li { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #eee; }
+    #totais { background: #f0f0f0; padding: 12px; border-radius: 6px; margin-top: 12px; }
+    .barra-fundo { background: #ddd; border-radius: 6px; height: 16px; margin: 4px 0 10px; overflow: hidden; }
+    .barra-preenchida { background: #2e7d32; height: 100%; }
+    .checkbox-linha { display: flex; align-items: center; gap: 8px; }
+    .checkbox-linha input { width: auto; }
+    nav { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+    nav button { background: #ddd; color: #333; width: auto; flex: 1; }
+    nav button.ativo { background: #2e7d32; color: white; }
+    .historico-item { border: 1px solid #ddd; border-radius: 6px; padding: 10px; margin-bottom: 8px; }
+    .historico-item small { color: #666; }
+    .progresso-bloco { border: 1px solid #ddd; border-radius: 6px; padding: 10px; margin-bottom: 8px; }
+    .progresso-bloco h4 { margin: 0 0 6px 0; }
+  </style>
 </head>
 <body>
-  <h1>Teste de conexão</h1>
-  <p id="resultado">Carregando...</p>
+
+  <nav>
+    <button id="navLancar" class="ativo">Lançar</button>
+    <button id="navProgresso">Progresso</button>
+    <button id="navHistorico">Histórico</button>
+  </nav>
+
+  <!-- ===================== TELA: LANÇAR ===================== -->
+  <div id="viewLancar">
+    <h2>Lançar refeição</h2>
+
+    <label for="tipoRefeicao">Horário</label>
+    <select id="tipoRefeicao">
+      <option value="Café da manhã">Café da manhã</option>
+      <option value="Almoço">Almoço</option>
+      <option value="Lanche da tarde">Lanche da tarde</option>
+      <option value="Jantar">Jantar</option>
+      <option value="Ceia">Ceia</option>
+    </select>
+
+    <label for="nomePrato">Nome da refeição</label>
+    <input type="text" id="nomePrato" placeholder="Ex: Tapioca de frango">
+
+    <h3>Favoritos</h3>
+    <div id="favoritos">Carregando favoritos...</div>
+
+    <input type="text" id="busca" placeholder="Buscar ingrediente...">
+    <div id="sugestoes"></div>
+
+    <div id="selecao" style="display:none;">
+      <p id="ingredienteSelecionado"></p>
+      <input type="number" id="quantidade" placeholder="Quantidade em gramas">
+      <button id="btnAdicionar">Adicionar à refeição</button>
+    </div>
+
+    <h3>Itens desta refeição</h3>
+    <ul id="itens"></ul>
+
+    <div id="totais">
+      <strong>Totais:</strong>
+      <p id="totalKcal">0 kcal</p>
+      <p id="totalMacros">P: 0g | C: 0g | G: 0g</p>
+    </div>
+
+    <div class="checkbox-linha">
+      <input type="checkbox" id="marcarFavorito">
+      <label for="marcarFavorito">Salvar também como favorito</label>
+    </div>
+
+    <button id="btnSalvar">Salvar refeição</button>
+    <p id="mensagemSalvar"></p>
+  </div>
+
+  <!-- ===================== TELA: PROGRESSO ===================== -->
+  <div id="viewProgresso" style="display:none;">
+    <h2>Progresso de hoje</h2>
+    <div id="progressoDiario">Carregando...</div>
+
+    <h3>Por refeição (hoje)</h3>
+    <div id="progressoPorTipo"></div>
+
+    <h3>Últimos 7 dias</h3>
+    <div id="progressoSemanal">Carregando...</div>
+  </div>
+
+  <!-- ===================== TELA: HISTÓRICO ===================== -->
+  <div id="viewHistorico" style="display:none;">
+    <h2>Histórico</h2>
+    <button id="btnExportarCSV">Exportar CSV</button>
+    <div id="listaHistorico">Carregando...</div>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    const supabaseUrl = "https://lgrlzbedortavlokyvag.supabase.co/rest/v1/";
+    const supabaseUrl = "https://lgrlzbedortavlokyvag.supabase.co";
     const supabaseKey = "sb_publishable_ydgbE3WSndTe_1hn05pylQ_zJ30jfMR";
     const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-    async function testarConexao() {
-      const { data, error } = await supabaseClient
-        .from("ingredientes")
-        .select("*", { count: "exact", head: true });
+    let ingredienteAtual = null;
+    let itensRefeicao = [];
+    let historicoCache = []; // guarda o último histórico carregado, pra reusar na exportação
 
-      const resultado = document.getElementById("resultado");
-      if (error) {
-        resultado.textContent = "Erro: " + error.message;
-      } else {
-        resultado.textContent = "Conectado! A tabela ingredientes está acessível.";
+    // ---------- NAVEGAÇÃO ----------
+    document.getElementById("navLancar").addEventListener("click", () => mostrarTela("lancar"));
+    document.getElementById("navProgresso").addEventListener("click", () => mostrarTela("progresso"));
+    document.getElementById("navHistorico").addEventListener("click", () => mostrarTela("historico"));
+
+    function mostrarTela(tela) {
+      document.getElementById("viewLancar").style.display = tela === "lancar" ? "block" : "none";
+      document.getElementById("viewProgresso").style.display = tela === "progresso" ? "block" : "none";
+      document.getElementById("viewHistorico").style.display = tela === "historico" ? "block" : "none";
+      document.getElementById("navLancar").classList.toggle("ativo", tela === "lancar");
+      document.getElementById("navProgresso").classList.toggle("ativo", tela === "progresso");
+      document.getElementById("navHistorico").classList.toggle("ativo", tela === "historico");
+      if (tela === "historico") carregarHistorico();
+      if (tela === "progresso") {
+        carregarProgressoDoDia();
+        carregarProgressoSemanal();
       }
     }
 
-    testarConexao();
+    // ---------- FAVORITOS ----------
+    async function carregarFavoritos() {
+      const div = document.getElementById("favoritos");
+
+      const { data, error } = await supabaseClient
+        .from("refeicoes")
+        .select("id, nome, tipo_refeicao, data_hora")
+        .eq("is_favorito", true)
+        .order("data_hora", { ascending: false });
+
+      if (error) { div.innerHTML = "Erro ao carregar favoritos."; return; }
+      if (data.length === 0) { div.innerHTML = "<p>Nenhum favorito ainda.</p>"; return; }
+
+      div.innerHTML = "";
+      data.forEach((fav) => {
+        const item = document.createElement("div");
+        item.textContent = "⭐ " + fav.nome;
+        item.onclick = () => carregarItensDoFavorito(fav.id, fav.nome, fav.tipo_refeicao);
+        div.appendChild(item);
+      });
+    }
+
+    async function carregarItensDoFavorito(refeicaoId, nome, tipoRefeicao) {
+      const { data, error } = await supabaseClient
+        .from("itens_refeicao")
+        .select("quantidade_g, ingredientes(id, nome, kcal, proteina_g, carboidrato_g, gordura_g)")
+        .eq("refeicao_id", refeicaoId);
+
+      if (error) { alert("Erro ao carregar favorito: " + error.message); return; }
+
+      itensRefeicao = data.map((item) => {
+        const ing = item.ingredientes;
+        const fator = item.quantidade_g / 100;
+        return {
+          ingrediente_id: ing.id,
+          nome: ing.nome,
+          quantidade_g: item.quantidade_g,
+          kcal: (ing.kcal || 0) * fator,
+          proteina_g: (ing.proteina_g || 0) * fator,
+          carboidrato_g: (ing.carboidrato_g || 0) * fator,
+          gordura_g: (ing.gordura_g || 0) * fator,
+        };
+      });
+
+      document.getElementById("nomePrato").value = nome;
+      if (tipoRefeicao) document.getElementById("tipoRefeicao").value = tipoRefeicao;
+      renderizarLista();
+    }
+
+    // ---------- BUSCA DE INGREDIENTES ----------
+    document.getElementById("busca").addEventListener("input", async (e) => {
+      const termo = e.target.value.trim();
+      const div = document.getElementById("sugestoes");
+      if (termo.length < 2) { div.innerHTML = ""; return; }
+
+      const { data, error } = await supabaseClient
+        .from("ingredientes")
+        .select("id, nome, kcal, proteina_g, carboidrato_g, gordura_g")
+        .ilike("nome", `%${termo}%`)
+        .limit(10);
+
+      if (error) { div.innerHTML = "Erro na busca."; return; }
+
+      div.innerHTML = "";
+      data.forEach((ing) => {
+        const item = document.createElement("div");
+        item.textContent = ing.nome;
+        item.onclick = () => selecionarIngrediente(ing);
+        div.appendChild(item);
+      });
+    });
+
+    function selecionarIngrediente(ing) {
+      ingredienteAtual = ing;
+      document.getElementById("ingredienteSelecionado").textContent = "Selecionado: " + ing.nome;
+      document.getElementById("selecao").style.display = "block";
+      document.getElementById("sugestoes").innerHTML = "";
+      document.getElementById("busca").value = "";
+    }
+
+    document.getElementById("btnAdicionar").addEventListener("click", () => {
+      const qtd = parseFloat(document.getElementById("quantidade").value);
+      if (!ingredienteAtual || !qtd || qtd <= 0) {
+        alert("Escolha um ingrediente e uma quantidade válida.");
+        return;
+      }
+
+      const fator = qtd / 100;
+      itensRefeicao.push({
+        ingrediente_id: ingredienteAtual.id,
+        nome: ingredienteAtual.nome,
+        quantidade_g: qtd,
+        kcal: (ingredienteAtual.kcal || 0) * fator,
+        proteina_g: (ingredienteAtual.proteina_g || 0) * fator,
+        carboidrato_g: (ingredienteAtual.carboidrato_g || 0) * fator,
+        gordura_g: (ingredienteAtual.gordura_g || 0) * fator,
+      });
+
+      ingredienteAtual = null;
+      document.getElementById("selecao").style.display = "none";
+      document.getElementById("quantidade").value = "";
+      renderizarLista();
+    });
+
+    function calcularTotais() {
+      return itensRefeicao.reduce((totais, item) => {
+        totais.kcal += item.kcal;
+        totais.proteina_g += item.proteina_g;
+        totais.carboidrato_g += item.carboidrato_g;
+        totais.gordura_g += item.gordura_g;
+        return totais;
+      }, { kcal: 0, proteina_g: 0, carboidrato_g: 0, gordura_g: 0 });
+    }
+
+    function renderizarLista() {
+      const ul = document.getElementById("itens");
+      ul.innerHTML = "";
+
+      itensRefeicao.forEach((item, index) => {
+        const li = document.createElement("li");
+        li.innerHTML = `<span>${item.nome} (${item.quantidade_g}g)</span>
+          <button onclick="removerItem(${index})">x</button>`;
+        ul.appendChild(li);
+      });
+
+      const totais = calcularTotais();
+      document.getElementById("totalKcal").textContent = totais.kcal.toFixed(0) + " kcal";
+      document.getElementById("totalMacros").textContent =
+        `P: ${totais.proteina_g.toFixed(1)}g | C: ${totais.carboidrato_g.toFixed(1)}g | G: ${totais.gordura_g.toFixed(1)}g`;
+    }
+
+    function removerItem(index) {
+      itensRefeicao.splice(index, 1);
+      renderizarLista();
+    }
+
+    function barraProgresso(rotulo, valor, meta) {
+      const percentual = meta ? Math.min((valor / meta) * 100, 100) : 0;
+      return `
+        <p>${rotulo}: ${valor.toFixed(1)} / ${meta ?? "?"} (${percentual.toFixed(0)}%)</p>
+        <div class="barra-fundo"><div class="barra-preenchida" style="width:${percentual}%"></div></div>
+      `;
+    }
+
+    document.getElementById("btnSalvar").addEventListener("click", async () => {
+      if (itensRefeicao.length === 0) {
+        alert("Adicione pelo menos um ingrediente antes de salvar.");
+        return;
+      }
+
+      const tipoRefeicao = document.getElementById("tipoRefeicao").value;
+      const nomePrato = document.getElementById("nomePrato").value.trim();
+      const marcarFavorito = document.getElementById("marcarFavorito").checked;
+
+      if (!nomePrato) {
+        alert("Dê um nome para essa refeição (ex: Tapioca de frango).");
+        return;
+      }
+
+      const { data: refeicao, error: erroRefeicao } = await supabaseClient
+        .from("refeicoes")
+        .insert({ nome: nomePrato, tipo_refeicao: tipoRefeicao, is_favorito: marcarFavorito })
+        .select()
+        .single();
+
+      if (erroRefeicao) {
+        document.getElementById("mensagemSalvar").textContent = "Erro ao salvar: " + erroRefeicao.message;
+        return;
+      }
+
+      const itensParaSalvar = itensRefeicao.map((item) => ({
+        refeicao_id: refeicao.id,
+        ingrediente_id: item.ingrediente_id,
+        quantidade_g: item.quantidade_g,
+      }));
+
+      const { error: erroItens } = await supabaseClient
+        .from("itens_refeicao")
+        .insert(itensParaSalvar);
+
+      if (erroItens) {
+        document.getElementById("mensagemSalvar").textContent = "Erro ao salvar itens: " + erroItens.message;
+        return;
+      }
+
+      document.getElementById("mensagemSalvar").textContent = "Refeição salva! Veja o progresso na aba Progresso.";
+
+      itensRefeicao = [];
+      document.getElementById("marcarFavorito").checked = false;
+      document.getElementById("nomePrato").value = "";
+      renderizarLista();
+      carregarFavoritos();
+    });
+
+    // ---------- PROGRESSO DO DIA ----------
+    async function carregarProgressoDoDia() {
+      const divDiario = document.getElementById("progressoDiario");
+      const divPorTipo = document.getElementById("progressoPorTipo");
+      divDiario.innerHTML = "Carregando...";
+      divPorTipo.innerHTML = "";
+
+      const inicioHoje = new Date();
+      inicioHoje.setHours(0, 0, 0, 0);
+
+      const { data: refeicoesHoje, error: erroRef } = await supabaseClient
+        .from("refeicoes")
+        .select("id, tipo_refeicao")
+        .gte("data_hora", inicioHoje.toISOString());
+
+      if (erroRef) { divDiario.innerHTML = "Erro ao carregar progresso."; return; }
+
+      if (refeicoesHoje.length === 0) {
+        divDiario.innerHTML = "<p>Nenhuma refeição lançada hoje ainda.</p>";
+        divPorTipo.innerHTML = "";
+        return;
+      }
+
+      const idsHoje = refeicoesHoje.map((r) => r.id);
+      const tipoPorId = Object.fromEntries(refeicoesHoje.map((r) => [r.id, r.tipo_refeicao]));
+
+      const { data: itens, error: erroItens } = await supabaseClient
+        .from("itens_refeicao")
+        .select("refeicao_id, quantidade_g, ingredientes(kcal, proteina_g, carboidrato_g, gordura_g)")
+        .in("refeicao_id", idsHoje);
+
+      if (erroItens) { divDiario.innerHTML = "Erro ao carregar itens de hoje."; return; }
+
+      const totalDia = { kcal: 0, proteina_g: 0, carboidrato_g: 0, gordura_g: 0 };
+      const totalPorTipo = {};
+
+      itens.forEach((item) => {
+        const fator = item.quantidade_g / 100;
+        const ing = item.ingredientes;
+        const tipo = tipoPorId[item.refeicao_id] || "Sem horário";
+
+        if (!totalPorTipo[tipo]) totalPorTipo[tipo] = { kcal: 0, proteina_g: 0, carboidrato_g: 0, gordura_g: 0 };
+
+        const valores = {
+          kcal: (ing?.kcal || 0) * fator,
+          proteina_g: (ing?.proteina_g || 0) * fator,
+          carboidrato_g: (ing?.carboidrato_g || 0) * fator,
+          gordura_g: (ing?.gordura_g || 0) * fator,
+        };
+
+        totalDia.kcal += valores.kcal;
+        totalDia.proteina_g += valores.proteina_g;
+        totalDia.carboidrato_g += valores.carboidrato_g;
+        totalDia.gordura_g += valores.gordura_g;
+
+        totalPorTipo[tipo].kcal += valores.kcal;
+        totalPorTipo[tipo].proteina_g += valores.proteina_g;
+        totalPorTipo[tipo].carboidrato_g += valores.carboidrato_g;
+        totalPorTipo[tipo].gordura_g += valores.gordura_g;
+      });
+
+      const { data: metaDia } = await supabaseClient
+        .from("metas")
+        .select("*")
+        .eq("tipo", "diaria")
+        .maybeSingle();
+
+      if (!metaDia) {
+        divDiario.innerHTML = "<p>Nenhuma meta diária cadastrada.</p>";
+      } else {
+        divDiario.innerHTML = `
+          ${barraProgresso("Calorias", totalDia.kcal, metaDia.kcal_meta)}
+          ${barraProgresso("Proteína (g)", totalDia.proteina_g, metaDia.proteina_meta_g)}
+          ${barraProgresso("Carboidrato (g)", totalDia.carboidrato_g, metaDia.carboidrato_meta_g)}
+          ${barraProgresso("Gordura (g)", totalDia.gordura_g, metaDia.gordura_meta_g)}
+        `;
+      }
+
+      const { data: metasPorTipo } = await supabaseClient
+        .from("metas")
+        .select("*")
+        .eq("tipo", "refeicao");
+
+      const metaPorNome = Object.fromEntries((metasPorTipo || []).map((m) => [m.nome_refeicao, m]));
+
+      divPorTipo.innerHTML = "";
+      Object.entries(totalPorTipo).forEach(([tipo, totais]) => {
+        const meta = metaPorNome[tipo];
+        const bloco = document.createElement("div");
+        bloco.className = "progresso-bloco";
+        bloco.innerHTML = `
+          <h4>${tipo}</h4>
+          ${meta
+            ? barraProgresso("Calorias", totais.kcal, meta.kcal_meta) +
+              barraProgresso("Proteína (g)", totais.proteina_g, meta.proteina_meta_g) +
+              barraProgresso("Carboidrato (g)", totais.carboidrato_g, meta.carboidrato_meta_g) +
+              barraProgresso("Gordura (g)", totais.gordura_g, meta.gordura_meta_g)
+            : "<p>Sem meta cadastrada para essa refeição.</p>"}
+        `;
+        divPorTipo.appendChild(bloco);
+      });
+    }
+
+    // ---------- PROGRESSO SEMANAL ----------
+    async function carregarProgressoSemanal() {
+      const div = document.getElementById("progressoSemanal");
+      div.innerHTML = "Carregando...";
+
+      const dias = [];
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setHours(0, 0, 0, 0);
+        d.setDate(d.getDate() - i);
+        dias.push(d);
+      }
+
+      const inicioSemana = dias[0];
+
+      const { data: refeicoesSemana, error: erroRef } = await supabaseClient
+        .from("refeicoes")
+        .select("id, data_hora")
+        .gte("data_hora", inicioSemana.toISOString());
+
+      if (erroRef) { div.innerHTML = "Erro ao carregar semana."; return; }
+
+      if (refeicoesSemana.length === 0) {
+        div.innerHTML = "<p>Nenhuma refeição lançada nos últimos 7 dias.</p>";
+        return;
+      }
+
+      const idsSemana = refeicoesSemana.map((r) => r.id);
+      const diaPorId = Object.fromEntries(
+        refeicoesSemana.map((r) => [r.id, new Date(r.data_hora).toDateString()])
+      );
+
+      const { data: itens, error: erroItens } = await supabaseClient
+        .from("itens_refeicao")
+        .select("refeicao_id, quantidade_g, ingredientes(kcal, proteina_g, carboidrato_g, gordura_g)")
+        .in("refeicao_id", idsSemana);
+
+      if (erroItens) { div.innerHTML = "Erro ao carregar itens da semana."; return; }
+
+      const totalPorDia = {};
+      itens.forEach((item) => {
+        const fator = item.quantidade_g / 100;
+        const ing = item.ingredientes;
+        const chaveDia = diaPorId[item.refeicao_id];
+
+        if (!totalPorDia[chaveDia]) totalPorDia[chaveDia] = { kcal: 0, proteina_g: 0, carboidrato_g: 0, gordura_g: 0 };
+
+        totalPorDia[chaveDia].kcal += (ing?.kcal || 0) * fator;
+        totalPorDia[chaveDia].proteina_g += (ing?.proteina_g || 0) * fator;
+        totalPorDia[chaveDia].carboidrato_g += (ing?.carboidrato_g || 0) * fator;
+        totalPorDia[chaveDia].gordura_g += (ing?.gordura_g || 0) * fator;
+      });
+
+      const { data: metaDia } = await supabaseClient
+        .from("metas")
+        .select("*")
+        .eq("tipo", "diaria")
+        .maybeSingle();
+
+      div.innerHTML = "";
+      dias.forEach((d) => {
+        const chave = d.toDateString();
+        const totais = totalPorDia[chave] || { kcal: 0, proteina_g: 0, carboidrato_g: 0, gordura_g: 0 };
+        const rotulo = d.toLocaleDateString("pt-BR", { weekday: "short", day: "2-digit", month: "2-digit" });
+
+        const bloco = document.createElement("div");
+        bloco.className = "progresso-bloco";
+        bloco.innerHTML = `
+          <h4>${rotulo}</h4>
+          ${metaDia
+            ? barraProgresso("Calorias", totais.kcal, metaDia.kcal_meta)
+            : `<p>${totais.kcal.toFixed(0)} kcal</p>`}
+        `;
+        div.appendChild(bloco);
+      });
+    }
+
+    // ---------- HISTÓRICO ----------
+    async function carregarHistorico() {
+      const divLista = document.getElementById("listaHistorico");
+      divLista.innerHTML = "Carregando...";
+
+      const { data: refeicoes, error: erroRefeicoes } = await supabaseClient
+        .from("refeicoes")
+        .select("id, nome, tipo_refeicao, data_hora")
+        .order("data_hora", { ascending: false });
+
+      if (erroRefeicoes) { divLista.innerHTML = "Erro ao carregar histórico."; return; }
+
+      const { data: itens, error: erroItens } = await supabaseClient
+        .from("itens_refeicao")
+        .select("refeicao_id, quantidade_g, ingredientes(nome, kcal, proteina_g, carboidrato_g, gordura_g)");
+
+      if (erroItens) { divLista.innerHTML = "Erro ao carregar itens do histórico."; return; }
+
+      const totaisPorRefeicao = {};
+      const ingredientesPorRefeicao = {};
+
+      itens.forEach((item) => {
+        const fator = item.quantidade_g / 100;
+        const ing = item.ingredientes;
+
+        if (!totaisPorRefeicao[item.refeicao_id]) {
+          totaisPorRefeicao[item.refeicao_id] = { kcal: 0, proteina_g: 0, carboidrato_g: 0, gordura_g: 0 };
+          ingredientesPorRefeicao[item.refeicao_id] = [];
+        }
+
+        totaisPorRefeicao[item.refeicao_id].kcal += (ing?.kcal || 0) * fator;
+        totaisPorRefeicao[item.refeicao_id].proteina_g += (ing?.proteina_g || 0) * fator;
+        totaisPorRefeicao[item.refeicao_id].carboidrato_g += (ing?.carboidrato_g || 0) * fator;
+        totaisPorRefeicao[item.refeicao_id].gordura_g += (ing?.gordura_g || 0) * fator;
+
+        ingredientesPorRefeicao[item.refeicao_id].push(`${item.quantidade_g}g ${ing?.nome || "?"}`);
+      });
+
+      historicoCache = refeicoes.map((r) => ({
+        ...r,
+        totais: totaisPorRefeicao[r.id] || { kcal: 0, proteina_g: 0, carboidrato_g: 0, gordura_g: 0 },
+        ingredientesTexto: (ingredientesPorRefeicao[r.id] || []).join(", "),
+      }));
+
+      if (historicoCache.length === 0) {
+        divLista.innerHTML = "<p>Nenhuma refeição lançada ainda.</p>";
+        return;
+      }
+
+      divLista.innerHTML = "";
+      historicoCache.forEach((r) => {
+        const dataFormatada = new Date(r.data_hora).toLocaleString("pt-BR");
+        const div = document.createElement("div");
+        div.className = "historico-item";
+        div.innerHTML = `
+          <strong>${r.nome}</strong> <small>(${r.tipo_refeicao || "-"})</small><br>
+          <small>${dataFormatada}</small><br>
+          ${r.totais.kcal.toFixed(0)} kcal · P: ${r.totais.proteina_g.toFixed(1)}g ·
+          C: ${r.totais.carboidrato_g.toFixed(1)}g · G: ${r.totais.gordura_g.toFixed(1)}g<br>
+          <small>${r.ingredientesTexto}</small>
+        `;
+        divLista.appendChild(div);
+      });
+    }
+
+    document.getElementById("btnExportarCSV").addEventListener("click", () => {
+      if (historicoCache.length === 0) {
+        alert("Não há dados para exportar.");
+        return;
+      }
+
+      const cabecalho = ["Data/Hora", "Horário da refeição", "Nome", "Ingredientes", "Kcal", "Proteína (g)", "Carboidrato (g)", "Gordura (g)"];
+      const linhas = historicoCache.map((r) => [
+        new Date(r.data_hora).toLocaleString("pt-BR"),
+        r.tipo_refeicao || "",
+        r.nome,
+        r.ingredientesTexto,
+        r.totais.kcal.toFixed(1),
+        r.totais.proteina_g.toFixed(1),
+        r.totais.carboidrato_g.toFixed(1),
+        r.totais.gordura_g.toFixed(1),
+      ]);
+
+      const csv = [cabecalho, ...linhas]
+        .map((linha) => linha.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(";"))
+        .join("\n");
+
+      const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "refeicoes.csv";
+      link.click();
+      URL.revokeObjectURL(url);
+    });
+
+    carregarFavoritos();
   </script>
 </body>
 </html>
