@@ -4,34 +4,255 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Nutrição App</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
   <style>
-    body { font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 16px; }
-    input, select, button { font-size: 16px; padding: 8px; margin: 4px 0; width: 100%; box-sizing: border-box; }
-    button { background: #2e7d32; color: white; border: none; border-radius: 6px; }
-    #sugestoes div, #favoritos div { padding: 8px; border-bottom: 1px solid #ddd; }
-    #favoritos div { background: #fff8e1; cursor: pointer; }
-    #itens li { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #eee; }
-    #totais { background: #f0f0f0; padding: 12px; border-radius: 6px; margin-top: 12px; }
-    .barra-fundo { background: #ddd; border-radius: 6px; height: 16px; margin: 4px 0 10px; overflow: hidden; }
-    .barra-preenchida { background: #2e7d32; height: 100%; }
-    .checkbox-linha { display: flex; align-items: center; gap: 8px; }
+    :root {
+      --bg: #F5F7F1;
+      --ink: #1F2B1E;
+      --ink-soft: #5B6B57;
+      --linha: #DDE3D3;
+      --card: #FFFFFF;
+      --kcal: #2F5233;
+      --proteina: #C1542C;
+      --carboidrato: #D9A441;
+      --gordura: #6B7A3A;
+      --raio: 14px;
+      --raio-pequeno: 8px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 20px 16px 88px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    h2 {
+      font-family: 'Fraunces', serif;
+      font-weight: 700;
+      font-size: 26px;
+      margin: 4px 0 20px;
+      letter-spacing: -0.01em;
+    }
+
+    h3 {
+      font-family: 'Fraunces', serif;
+      font-weight: 500;
+      font-size: 17px;
+      margin: 24px 0 10px;
+      color: var(--ink);
+    }
+
+    h4 {
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      font-size: 14px;
+      margin: 0 0 10px;
+      color: var(--ink-soft);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--ink-soft);
+      margin: 14px 0 4px;
+    }
+
+    input, select {
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      padding: 12px 14px;
+      width: 100%;
+      border: 1.5px solid var(--linha);
+      border-radius: var(--raio-pequeno);
+      background: var(--card);
+      color: var(--ink);
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--kcal);
+    }
+
+    button {
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      padding: 13px;
+      width: 100%;
+      background: var(--kcal);
+      color: white;
+      border: none;
+      border-radius: var(--raio-pequeno);
+      margin-top: 10px;
+      cursor: pointer;
+    }
+
+    button:active { opacity: 0.85; }
+
+    /* ---------- Navegação inferior fixa ---------- */
+    nav {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: var(--card);
+      border-top: 1px solid var(--linha);
+      display: flex;
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
+      z-index: 10;
+    }
+
+    nav button {
+      flex: 1;
+      background: none;
+      color: var(--ink-soft);
+      font-size: 12px;
+      font-weight: 600;
+      margin: 0;
+      padding: 6px 4px 4px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    nav button svg { width: 22px; height: 22px; stroke: var(--ink-soft); fill: none; stroke-width: 1.8; }
+
+    nav button.ativo { color: var(--kcal); }
+    nav button.ativo svg { stroke: var(--kcal); }
+
+    /* ---------- Listas de sugestão / favoritos ---------- */
+    #sugestoes, #favoritos {
+      background: var(--card);
+      border-radius: var(--raio-pequeno);
+      overflow: hidden;
+      margin-top: 4px;
+    }
+    #sugestoes div, #favoritos div {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--linha);
+      font-size: 15px;
+    }
+    #sugestoes div:last-child, #favoritos div:last-child { border-bottom: none; }
+    #favoritos div { cursor: pointer; }
+    #favoritos div:active { background: var(--bg); }
+    #favoritos p, #sugestoes p { padding: 12px 14px; color: var(--ink-soft); font-size: 14px; }
+
+    /* ---------- Itens da refeição atual ---------- */
+    #itens { list-style: none; padding: 0; margin: 0; }
+    #itens li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--card);
+      padding: 10px 14px;
+      border-radius: var(--raio-pequeno);
+      margin-bottom: 6px;
+      font-size: 15px;
+    }
+    #itens li button {
+      width: 26px; height: 26px;
+      padding: 0;
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink-soft);
+      border-radius: 50%;
+      font-size: 14px;
+      line-height: 1;
+    }
+
+    /* ---------- Totais ---------- */
+    #totais {
+      background: var(--card);
+      padding: 16px;
+      border-radius: var(--raio);
+      margin-top: 14px;
+      border: 1px solid var(--linha);
+    }
+    #totais strong {
+      font-family: 'Fraunces', serif;
+      font-size: 15px;
+      display: block;
+      margin-bottom: 6px;
+      color: var(--ink-soft);
+      font-weight: 500;
+    }
+    #totalKcal {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      font-size: 28px;
+      color: var(--kcal);
+      margin: 2px 0;
+    }
+    #totalMacros {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: var(--ink-soft);
+    }
+
+    .checkbox-linha { display: flex; align-items: center; gap: 8px; margin-top: 14px; }
     .checkbox-linha input { width: auto; }
-    nav { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
-    nav button { background: #ddd; color: #333; width: auto; flex: 1; }
-    nav button.ativo { background: #2e7d32; color: white; }
-    .historico-item { border: 1px solid #ddd; border-radius: 6px; padding: 10px; margin-bottom: 8px; }
-    .historico-item small { color: #666; }
-    .progresso-bloco { border: 1px solid #ddd; border-radius: 6px; padding: 10px; margin-bottom: 8px; }
-    .progresso-bloco h4 { margin: 0 0 6px 0; }
+    .checkbox-linha label { margin: 0; }
+
+    #mensagemSalvar { font-size: 14px; color: var(--kcal); font-weight: 500; min-height: 20px; }
+
+    /* ---------- Barras de progresso ---------- */
+    .linha-progresso { margin-bottom: 14px; }
+    .linha-progresso .rotulo {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      margin-bottom: 5px;
+    }
+    .linha-progresso .rotulo span:first-child { font-weight: 600; }
+    .linha-progresso .rotulo span:last-child {
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--ink-soft);
+    }
+    .barra-fundo { background: var(--linha); border-radius: 6px; height: 10px; overflow: hidden; }
+    .barra-preenchida { height: 100%; border-radius: 6px; }
+
+    .progresso-bloco {
+      background: var(--card);
+      border: 1px solid var(--linha);
+      border-radius: var(--raio);
+      padding: 16px;
+      margin-bottom: 10px;
+    }
+    .progresso-bloco h4 { margin-bottom: 12px; }
+
+    /* ---------- Histórico ---------- */
+    .historico-item {
+      background: var(--card);
+      border: 1px solid var(--linha);
+      border-radius: var(--raio);
+      padding: 14px;
+      margin-bottom: 10px;
+    }
+    .historico-item strong { font-family: 'Fraunces', serif; font-size: 16px; }
+    .historico-item small { color: var(--ink-soft); font-size: 12px; }
+    .historico-item .macros {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      margin: 6px 0;
+      color: var(--ink);
+    }
+
+    #btnExportarCSV { background: var(--card); color: var(--kcal); border: 1.5px solid var(--kcal); }
   </style>
 </head>
 <body>
-
-  <nav>
-    <button id="navLancar" class="ativo">Lançar</button>
-    <button id="navProgresso">Progresso</button>
-    <button id="navHistorico">Histórico</button>
-  </nav>
 
   <!-- ===================== TELA: LANÇAR ===================== -->
   <div id="viewLancar">
@@ -52,6 +273,7 @@
     <h3>Favoritos</h3>
     <div id="favoritos">Carregando favoritos...</div>
 
+    <h3>Ingredientes</h3>
     <input type="text" id="busca" placeholder="Buscar ingrediente...">
     <div id="sugestoes"></div>
 
@@ -65,9 +287,9 @@
     <ul id="itens"></ul>
 
     <div id="totais">
-      <strong>Totais:</strong>
-      <p id="totalKcal">0 kcal</p>
-      <p id="totalMacros">P: 0g | C: 0g | G: 0g</p>
+      <strong>Total da refeição</strong>
+      <div id="totalKcal">0 kcal</div>
+      <div id="totalMacros">P: 0g · C: 0g · G: 0g</div>
     </div>
 
     <div class="checkbox-linha">
@@ -98,15 +320,34 @@
     <div id="listaHistorico">Carregando...</div>
   </div>
 
+  <!-- ===================== NAVEGAÇÃO INFERIOR ===================== -->
+  <nav>
+    <button id="navLancar" class="ativo">
+      <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg>
+      Lançar
+    </button>
+    <button id="navProgresso">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3" stroke-linecap="round"/></svg>
+      Progresso
+    </button>
+    <button id="navHistorico">
+      <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10" stroke-linecap="round"/></svg>
+      Histórico
+    </button>
+  </nav>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     const supabaseUrl = "https://lgrlzbedortavlokyvag.supabase.co";
     const supabaseKey = "sb_publishable_ydgbE3WSndTe_1hn05pylQ_zJ30jfMR";
     const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
+    const CORES = { kcal: "#2F5233", proteina_g: "#C1542C", carboidrato_g: "#D9A441", gordura_g: "#6B7A3A" };
+    const ROTULOS = { kcal: "Calorias", proteina_g: "Proteína (g)", carboidrato_g: "Carboidrato (g)", gordura_g: "Gordura (g)" };
+
     let ingredienteAtual = null;
     let itensRefeicao = [];
-    let historicoCache = []; // guarda o último histórico carregado, pra reusar na exportação
+    let historicoCache = [];
 
     // ---------- NAVEGAÇÃO ----------
     document.getElementById("navLancar").addEventListener("click", () => mostrarTela("lancar"));
@@ -137,7 +378,7 @@
         .eq("is_favorito", true)
         .order("data_hora", { ascending: false });
 
-      if (error) { div.innerHTML = "Erro ao carregar favoritos."; return; }
+      if (error) { div.innerHTML = "<p>Erro ao carregar favoritos.</p>"; return; }
       if (data.length === 0) { div.innerHTML = "<p>Nenhum favorito ainda.</p>"; return; }
 
       div.innerHTML = "";
@@ -188,7 +429,7 @@
         .ilike("nome", `%${termo}%`)
         .limit(10);
 
-      if (error) { div.innerHTML = "Erro na busca."; return; }
+      if (error) { div.innerHTML = "<p>Erro na busca.</p>"; return; }
 
       div.innerHTML = "";
       data.forEach((ing) => {
@@ -248,14 +489,14 @@
       itensRefeicao.forEach((item, index) => {
         const li = document.createElement("li");
         li.innerHTML = `<span>${item.nome} (${item.quantidade_g}g)</span>
-          <button onclick="removerItem(${index})">x</button>`;
+          <button onclick="removerItem(${index})">×</button>`;
         ul.appendChild(li);
       });
 
       const totais = calcularTotais();
       document.getElementById("totalKcal").textContent = totais.kcal.toFixed(0) + " kcal";
       document.getElementById("totalMacros").textContent =
-        `P: ${totais.proteina_g.toFixed(1)}g | C: ${totais.carboidrato_g.toFixed(1)}g | G: ${totais.gordura_g.toFixed(1)}g`;
+        `P: ${totais.proteina_g.toFixed(1)}g · C: ${totais.carboidrato_g.toFixed(1)}g · G: ${totais.gordura_g.toFixed(1)}g`;
     }
 
     function removerItem(index) {
@@ -263,11 +504,19 @@
       renderizarLista();
     }
 
-    function barraProgresso(rotulo, valor, meta) {
+    // chave: "kcal" | "proteina_g" | "carboidrato_g" | "gordura_g" — usa a cor certa por macro
+    function barraProgresso(chave, valor, meta) {
       const percentual = meta ? Math.min((valor / meta) * 100, 100) : 0;
       return `
-        <p>${rotulo}: ${valor.toFixed(1)} / ${meta ?? "?"} (${percentual.toFixed(0)}%)</p>
-        <div class="barra-fundo"><div class="barra-preenchida" style="width:${percentual}%"></div></div>
+        <div class="linha-progresso">
+          <div class="rotulo">
+            <span>${ROTULOS[chave]}</span>
+            <span>${valor.toFixed(1)} / ${meta ?? "?"}</span>
+          </div>
+          <div class="barra-fundo">
+            <div class="barra-preenchida" style="width:${percentual}%; background:${CORES[chave]}"></div>
+          </div>
+        </div>
       `;
     }
 
@@ -312,7 +561,7 @@
         return;
       }
 
-      document.getElementById("mensagemSalvar").textContent = "Refeição salva! Veja o progresso na aba Progresso.";
+      document.getElementById("mensagemSalvar").textContent = "Refeição salva. Veja o progresso na aba Progresso.";
 
       itensRefeicao = [];
       document.getElementById("marcarFavorito").checked = false;
@@ -336,7 +585,7 @@
         .select("id, tipo_refeicao")
         .gte("data_hora", inicioHoje.toISOString());
 
-      if (erroRef) { divDiario.innerHTML = "Erro ao carregar progresso."; return; }
+      if (erroRef) { divDiario.innerHTML = "<p>Erro ao carregar progresso.</p>"; return; }
 
       if (refeicoesHoje.length === 0) {
         divDiario.innerHTML = "<p>Nenhuma refeição lançada hoje ainda.</p>";
@@ -352,7 +601,7 @@
         .select("refeicao_id, quantidade_g, ingredientes(kcal, proteina_g, carboidrato_g, gordura_g)")
         .in("refeicao_id", idsHoje);
 
-      if (erroItens) { divDiario.innerHTML = "Erro ao carregar itens de hoje."; return; }
+      if (erroItens) { divDiario.innerHTML = "<p>Erro ao carregar itens de hoje.</p>"; return; }
 
       const totalDia = { kcal: 0, proteina_g: 0, carboidrato_g: 0, gordura_g: 0 };
       const totalPorTipo = {};
@@ -392,10 +641,12 @@
         divDiario.innerHTML = "<p>Nenhuma meta diária cadastrada.</p>";
       } else {
         divDiario.innerHTML = `
-          ${barraProgresso("Calorias", totalDia.kcal, metaDia.kcal_meta)}
-          ${barraProgresso("Proteína (g)", totalDia.proteina_g, metaDia.proteina_meta_g)}
-          ${barraProgresso("Carboidrato (g)", totalDia.carboidrato_g, metaDia.carboidrato_meta_g)}
-          ${barraProgresso("Gordura (g)", totalDia.gordura_g, metaDia.gordura_meta_g)}
+          <div class="progresso-bloco">
+            ${barraProgresso("kcal", totalDia.kcal, metaDia.kcal_meta)}
+            ${barraProgresso("proteina_g", totalDia.proteina_g, metaDia.proteina_meta_g)}
+            ${barraProgresso("carboidrato_g", totalDia.carboidrato_g, metaDia.carboidrato_meta_g)}
+            ${barraProgresso("gordura_g", totalDia.gordura_g, metaDia.gordura_meta_g)}
+          </div>
         `;
       }
 
@@ -414,10 +665,10 @@
         bloco.innerHTML = `
           <h4>${tipo}</h4>
           ${meta
-            ? barraProgresso("Calorias", totais.kcal, meta.kcal_meta) +
-              barraProgresso("Proteína (g)", totais.proteina_g, meta.proteina_meta_g) +
-              barraProgresso("Carboidrato (g)", totais.carboidrato_g, meta.carboidrato_meta_g) +
-              barraProgresso("Gordura (g)", totais.gordura_g, meta.gordura_meta_g)
+            ? barraProgresso("kcal", totais.kcal, meta.kcal_meta) +
+              barraProgresso("proteina_g", totais.proteina_g, meta.proteina_meta_g) +
+              barraProgresso("carboidrato_g", totais.carboidrato_g, meta.carboidrato_meta_g) +
+              barraProgresso("gordura_g", totais.gordura_g, meta.gordura_meta_g)
             : "<p>Sem meta cadastrada para essa refeição.</p>"}
         `;
         divPorTipo.appendChild(bloco);
@@ -444,7 +695,7 @@
         .select("id, data_hora")
         .gte("data_hora", inicioSemana.toISOString());
 
-      if (erroRef) { div.innerHTML = "Erro ao carregar semana."; return; }
+      if (erroRef) { div.innerHTML = "<p>Erro ao carregar semana.</p>"; return; }
 
       if (refeicoesSemana.length === 0) {
         div.innerHTML = "<p>Nenhuma refeição lançada nos últimos 7 dias.</p>";
@@ -461,7 +712,7 @@
         .select("refeicao_id, quantidade_g, ingredientes(kcal, proteina_g, carboidrato_g, gordura_g)")
         .in("refeicao_id", idsSemana);
 
-      if (erroItens) { div.innerHTML = "Erro ao carregar itens da semana."; return; }
+      if (erroItens) { div.innerHTML = "<p>Erro ao carregar itens da semana.</p>"; return; }
 
       const totalPorDia = {};
       itens.forEach((item) => {
@@ -494,7 +745,7 @@
         bloco.innerHTML = `
           <h4>${rotulo}</h4>
           ${metaDia
-            ? barraProgresso("Calorias", totais.kcal, metaDia.kcal_meta)
+            ? barraProgresso("kcal", totais.kcal, metaDia.kcal_meta)
             : `<p>${totais.kcal.toFixed(0)} kcal</p>`}
         `;
         div.appendChild(bloco);
@@ -511,13 +762,13 @@
         .select("id, nome, tipo_refeicao, data_hora")
         .order("data_hora", { ascending: false });
 
-      if (erroRefeicoes) { divLista.innerHTML = "Erro ao carregar histórico."; return; }
+      if (erroRefeicoes) { divLista.innerHTML = "<p>Erro ao carregar histórico.</p>"; return; }
 
       const { data: itens, error: erroItens } = await supabaseClient
         .from("itens_refeicao")
         .select("refeicao_id, quantidade_g, ingredientes(nome, kcal, proteina_g, carboidrato_g, gordura_g)");
 
-      if (erroItens) { divLista.innerHTML = "Erro ao carregar itens do histórico."; return; }
+      if (erroItens) { divLista.innerHTML = "<p>Erro ao carregar itens do histórico.</p>"; return; }
 
       const totaisPorRefeicao = {};
       const ingredientesPorRefeicao = {};
@@ -556,10 +807,10 @@
         const div = document.createElement("div");
         div.className = "historico-item";
         div.innerHTML = `
-          <strong>${r.nome}</strong> <small>(${r.tipo_refeicao || "-"})</small><br>
-          <small>${dataFormatada}</small><br>
-          ${r.totais.kcal.toFixed(0)} kcal · P: ${r.totais.proteina_g.toFixed(1)}g ·
-          C: ${r.totais.carboidrato_g.toFixed(1)}g · G: ${r.totais.gordura_g.toFixed(1)}g<br>
+          <strong>${r.nome}</strong> <small>· ${r.tipo_refeicao || "-"}</small><br>
+          <small>${dataFormatada}</small>
+          <div class="macros">${r.totais.kcal.toFixed(0)} kcal · P: ${r.totais.proteina_g.toFixed(1)}g ·
+          C: ${r.totais.carboidrato_g.toFixed(1)}g · G: ${r.totais.gordura_g.toFixed(1)}g</div>
           <small>${r.ingredientesTexto}</small>
         `;
         divLista.appendChild(div);
