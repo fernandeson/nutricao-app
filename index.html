@@ -83,9 +83,7 @@
   .pills button.ativo { background: var(--vermelho); color: white; border-color: var(--vermelho); }
 
   /* favoritos: bottom sheet */
-  .backdrop {
-    display: none; position: fixed; inset: 0; background: rgba(20,12,6,0.45); z-index: 19;
-  }
+  .backdrop { display: none; position: fixed; inset: 0; background: rgba(20,12,6,0.45); z-index: 19; }
   .backdrop.aberto { display: block; }
   #painelFavoritos {
     position: fixed; left: 0; right: 0; bottom: 0; max-width: 480px; margin: 0 auto;
@@ -114,19 +112,78 @@
     padding: 8px 14px; font-size: 13px; font-weight: 700; white-space: nowrap;
   }
 
-  #selecao { background: var(--card); border-radius: var(--raio-pequeno); padding: 14px; margin-top: 8px; }
+  /* card de seleção do ingrediente (antes de adicionar) */
+  .card-selecao { background: var(--card); border-radius: var(--raio); padding: 16px; margin-top: 8px; }
+  .card-selecao .cabecalho-sel strong { display: block; font-size: 16px; font-family: 'Fraunces', serif; }
+  .card-selecao .sub { font-size: 12px; color: var(--ink-soft); margin-top: 2px; }
 
-  /* itens da refeição */
+  .toggle-unidade { display: flex; gap: 6px; margin: 12px 0; }
+  .toggle-unidade button {
+    flex: 1; padding: 9px; font-size: 13px; font-weight: 700; border-radius: 999px;
+    border: 1.5px solid var(--card-2); background: var(--bg); color: var(--ink);
+  }
+  .toggle-unidade button.ativo { background: var(--vermelho); color: white; border-color: var(--vermelho); }
+
+  .aviso-medida { background: var(--bg); border-radius: var(--raio-pequeno); padding: 12px; margin-bottom: 12px; }
+  .aviso-medida p { margin: 0 0 8px; font-size: 12px; color: var(--ink-soft); }
+  .aviso-medida input { margin-bottom: 8px; }
+
+  .stepper { display: flex; align-items: center; justify-content: center; gap: 22px; margin: 14px 0; }
+  .stepper button {
+    width: 46px; height: 46px; border-radius: 50%; background: var(--ink); color: white;
+    font-size: 22px; font-weight: 700; border: none; padding: 0; margin: 0; line-height: 1;
+  }
+  .stepper-valor { text-align: center; min-width: 100px; }
+  .stepper-valor span:first-child { font-family: 'Fraunces', serif; font-size: 24px; font-weight: 700; display: block; }
+  .stepper-valor span:last-child { font-size: 12px; color: var(--ink-soft); }
+
+  .preview-nutrientes {
+    display: flex; justify-content: space-between; background: var(--bg); border-radius: var(--raio-pequeno);
+    padding: 10px 4px; margin-bottom: 12px; font-size: 11px; text-align: center;
+  }
+  .preview-nutrientes div { flex: 1; }
+  .preview-nutrientes .valor { font-weight: 700; font-size: 13px; display: block; }
+
+  /* itens da refeição: cards editáveis inline, com rolagem */
+  .itens-scroll { max-height: 320px; overflow-y: auto; margin-bottom: 4px; }
   #itens { list-style: none; padding: 0; margin: 0; }
   #itens li {
-    display: flex; justify-content: space-between; align-items: center;
-    background: var(--card); padding: 10px 14px; border-radius: var(--raio-pequeno);
-    margin-bottom: 6px; font-size: 14px;
+    display: flex; flex-direction: column; gap: 8px;
+    background: var(--card); padding: 12px 14px; border-radius: var(--raio-pequeno);
+    margin-bottom: 8px;
   }
-  #itens li button {
-    width: 24px; height: 24px; padding: 0; background: var(--card-2); color: var(--ink-soft);
-    border: none; border-radius: 50%; font-size: 13px;
+  .item-cabecalho { display: flex; justify-content: space-between; align-items: center; }
+  .item-cabecalho strong { font-size: 14px; }
+  .btn-remover {
+    width: 22px; height: 22px; border-radius: 50%; background: var(--card-2); color: var(--ink-soft);
+    font-size: 12px; border: none; padding: 0; margin: 0; line-height: 1; flex-shrink: 0;
   }
+  .item-stepper { display: flex; align-items: center; justify-content: center; gap: 10px; }
+  .item-stepper .btn-passo {
+    width: 32px; height: 32px; border-radius: 50%; background: var(--ink); color: white;
+    font-size: 16px; font-weight: 700; border: none; padding: 0; margin: 0; line-height: 1; flex-shrink: 0;
+  }
+  .item-valor { font-family: 'Fraunces', serif; font-weight: 700; font-size: 17px; min-width: 40px; text-align: center; }
+  .item-toggle-unidade { display: flex; gap: 4px; }
+  .item-toggle-unidade button {
+    padding: 5px 11px; font-size: 11px; font-weight: 700; border-radius: 999px;
+    border: 1.5px solid var(--card-2); background: var(--bg); color: var(--ink-soft); margin: 0;
+  }
+  .item-toggle-unidade button.ativo { background: var(--vermelho); color: white; border-color: var(--vermelho); }
+  .aviso-medida-item { background: var(--bg); border-radius: var(--raio-pequeno); padding: 8px; display: flex; gap: 6px; }
+  .aviso-medida-item input { margin: 0; flex: 1; padding: 8px 10px; font-size: 13px; }
+  .aviso-medida-item button {
+    width: auto; padding: 8px 12px; font-size: 12px; font-weight: 700; background: var(--ink);
+    color: white; border: none; border-radius: 999px; margin: 0; flex-shrink: 0;
+  }
+  .item-macros { display: flex; flex-wrap: wrap; gap: 5px; }
+  .pill { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 999px; }
+  .pill-kcal { background: var(--vermelho-fundo); color: var(--vermelho); }
+  .pill-prot { background: #F5DEDD; color: var(--vermelho-escuro); }
+  .pill-carb { background: #FBEEE2; color: #B9764E; }
+  .pill-gord { background: #EDF0E2; color: var(--oliva); }
+  .pill-fib { background: #E3EAD9; color: var(--verde-escuro); }
+
   .vazio { color: var(--ink-soft); font-size: 14px; text-align: center; padding: 24px 12px; }
 
   /* rodapé Lançar: meta diária + hero cards */
@@ -172,6 +229,28 @@
   .legenda-grafico { display: flex; gap: 16px; font-size: 12px; color: var(--ink-soft); margin-top: 8px; }
   .legenda-grafico span { display: flex; align-items: center; gap: 5px; }
   .legenda-grafico .quadrado { width: 9px; height: 9px; border-radius: 2px; display: inline-block; }
+
+  /* progresso dia: visão de cards */
+  .cards-progresso-hero { background: var(--card); border-radius: var(--raio); padding: 18px; margin-bottom: 10px; }
+  .cards-progresso-hero .rotulo-macro { font-size: 12px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 8px; }
+  .cards-progresso-hero .numero-grande { font-family: 'Fraunces', serif; font-weight: 700; font-size: 34px; margin-bottom: 10px; }
+  .cards-progresso-hero .numero-grande small { font-family: 'Inter', sans-serif; font-weight: 500; font-size: 14px; color: var(--ink-soft); }
+  .cards-progresso-hero .falta-txt { font-size: 12px; color: var(--ink-soft); margin-top: 6px; }
+
+  .grid-progresso-macros { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .card-progresso-macro { background: var(--card); border-radius: var(--raio-pequeno); padding: 14px; }
+  .card-progresso-macro .rotulo-macro { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 8px; }
+  .card-progresso-macro .numero-medio { font-family: 'Fraunces', serif; font-weight: 700; font-size: 22px; margin-bottom: 8px; }
+  .card-progresso-macro .numero-medio small { font-family: 'Inter', sans-serif; font-weight: 500; font-size: 12px; color: var(--ink-soft); }
+
+  .toggle-visualizacao { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
+  .toggle-visualizacao button {
+    width: 40px; height: 40px; border-radius: 50%; border: none; background: var(--card);
+    display: flex; align-items: center; justify-content: center; padding: 0; font-weight: 700; font-size: 15px; color: var(--ink-soft);
+  }
+  .toggle-visualizacao button.ativo { background: var(--vermelho); color: white; }
+  .toggle-visualizacao button svg { width: 18px; height: 18px; stroke: var(--ink-soft); fill: none; stroke-width: 2; }
+  .toggle-visualizacao button.ativo svg { stroke: white; }
 
   /* histórico */
   .historico-item { background: var(--card); border-radius: var(--raio); padding: 16px; margin-bottom: 10px; }
@@ -238,13 +317,42 @@
     <div id="sugestoes"></div>
 
     <div id="selecao" style="display:none;">
-      <p id="ingredienteSelecionado" style="margin:0 0 8px; font-weight:600;"></p>
-      <input type="number" id="quantidade" placeholder="Quantidade em gramas" value="100">
-      <button class="btn-principal" id="btnAdicionar" style="background:var(--ink);">Adicionar à refeição</button>
+      <div class="card-selecao">
+        <div class="cabecalho-sel">
+          <strong id="nomeIngredienteSelecionado"></strong>
+          <div class="sub" id="subIngredienteSelecionado"></div>
+        </div>
+
+        <div class="toggle-unidade" id="toggleUnidade">
+          <button data-unidade="colher" class="ativo">Colher de sopa</button>
+          <button data-unidade="gramas">Gramas</button>
+        </div>
+
+        <div class="aviso-medida" id="avisoSemMedida" style="display:none;">
+          <p>Sem conversão cadastrada pra colher de sopa deste ingrediente.</p>
+          <input type="number" id="novaMedidaGramas" placeholder="1 colher de sopa = quantos gramas?">
+          <button class="btn-principal" id="btnSalvarMedidaRapida" style="margin-top:0; background:var(--ink);">Salvar conversão</button>
+        </div>
+
+        <div class="stepper">
+          <button id="btnMenos">–</button>
+          <div class="stepper-valor">
+            <span id="valorQuantidade">100</span>
+            <span id="unidadeQuantidade">g</span>
+          </div>
+          <button id="btnMais">+</button>
+        </div>
+
+        <div class="preview-nutrientes" id="previewNutrientes"></div>
+
+        <button class="btn-principal" id="btnAdicionar">Adicionar à refeição</button>
+      </div>
     </div>
 
     <h3 id="tituloItens">Nova refeição · 0 itens</h3>
-    <ul id="itens"></ul>
+    <div class="itens-scroll">
+      <ul id="itens"></ul>
+    </div>
 
     <div class="topo-meta">
       <h3 style="margin:0;">Meta diária</h3>
@@ -279,7 +387,15 @@
       <button id="toggleSemana">7 dias</button>
     </div>
 
-    <div id="progressoDia"></div>
+    <div id="progressoDia">
+      <div id="conteudoDia"></div>
+      <div class="toggle-visualizacao">
+        <button id="btnModoBarras" title="Barras individuais">
+          <svg viewBox="0 0 24 24"><path d="M6 20V10M12 20V4M18 20v-7" stroke-linecap="round"/></svg>
+        </button>
+        <button id="btnModoCards" class="ativo" title="Cards">#</button>
+      </div>
+    </div>
 
     <div id="progressoSemana" style="display:none;">
       <div class="tabs-macro" id="tabsMacro">
@@ -397,13 +513,20 @@
     const META_CHAVE = { kcal: "kcal_meta", proteina_g: "proteina_meta_g", carboidrato_g: "carboidrato_meta_g", gordura_g: "gordura_meta_g", fibra_g: "fibra_meta_g" };
 
     let ingredienteAtual = null;
-    let itensRefeicao = [];
+    let itensRefeicao = []; // cada item: {ingrediente_id, nome, kcalPer100, proteinaPer100, carboidratoPer100, gorduraPer100, fibraPer100, quantidade_g, unidade, pesoColher, mostrarAviso}
     let tipoRefeicaoAtual = "Café da manhã";
     let historicoCache = [];
     let consumidoHoje = totaisZerados();
     let metaAtivaCache = null;
     let macroSemanaAtual = "kcal";
     let diasSemanaCache = [];
+    let modoVisualizacaoDia = "cards";
+    let ultimoTotalHojeCache = totaisZerados();
+
+    // estado do card de seleção (antes de adicionar)
+    let quantidadeGramas = 100;
+    let unidadeAtual = "gramas";
+    let pesoColherAtual = null;
 
     function totaisZerados() {
       return { kcal: 0, proteina_g: 0, carboidrato_g: 0, gordura_g: 0, fibra_g: 0 };
@@ -533,16 +656,18 @@
 
       itensRefeicao = data.map((item) => {
         const ing = item.ingredientes;
-        const fator = item.quantidade_g / 100;
         return {
           ingrediente_id: ing.id,
           nome: ing.nome,
+          kcalPer100: ing.kcal || 0,
+          proteinaPer100: ing.proteina_g || 0,
+          carboidratoPer100: ing.carboidrato_g || 0,
+          gorduraPer100: ing.gordura_g || 0,
+          fibraPer100: ing.fibra_g || 0,
           quantidade_g: item.quantidade_g,
-          kcal: (ing.kcal || 0) * fator,
-          proteina_g: (ing.proteina_g || 0) * fator,
-          carboidrato_g: (ing.carboidrato_g || 0) * fator,
-          gordura_g: (ing.gordura_g || 0) * fator,
-          fibra_g: (ing.fibra_g || 0) * fator,
+          unidade: "g",
+          pesoColher: null,
+          mostrarAviso: false,
         };
       });
 
@@ -590,7 +715,7 @@
         `;
         card.querySelector(".info").onclick = () => selecionarIngrediente(ing);
         card.querySelector(".btn-add-rapido").onclick = () => {
-          adicionarIngredienteComQuantidade(ing, 100);
+          adicionarIngredienteComQuantidade(ing, 100, "g", null);
           document.getElementById("sugestoes").innerHTML = "";
           document.getElementById("busca").value = "";
         };
@@ -598,48 +723,140 @@
       });
     });
 
-    function selecionarIngrediente(ing) {
+    // ---------- SELEÇÃO DE INGREDIENTE (card com stepper, antes de adicionar) ----------
+    async function selecionarIngrediente(ing) {
       ingredienteAtual = ing;
-      document.getElementById("ingredienteSelecionado").textContent = "Selecionado: " + ing.nome;
-      document.getElementById("selecao").style.display = "block";
-      document.getElementById("quantidade").value = "100";
       document.getElementById("sugestoes").innerHTML = "";
       document.getElementById("busca").value = "";
+
+      const { data } = await supabaseClient
+        .from("medidas_ingrediente")
+        .select("peso_g")
+        .eq("ingrediente_id", ing.id)
+        .eq("nome_medida", "Colher de sopa")
+        .maybeSingle();
+
+      if (data) {
+        pesoColherAtual = data.peso_g;
+        unidadeAtual = "colher";
+        quantidadeGramas = pesoColherAtual;
+      } else {
+        pesoColherAtual = null;
+        unidadeAtual = "gramas";
+        quantidadeGramas = 100;
+      }
+
+      document.getElementById("selecao").style.display = "block";
+      renderizarCardSelecao();
     }
 
-    document.getElementById("btnAdicionar").addEventListener("click", () => {
-      const qtd = parseFloat(document.getElementById("quantidade").value);
-      if (!ingredienteAtual || !qtd || qtd <= 0) {
-        alert("Escolha um ingrediente e uma quantidade válida.");
-        return;
+    function renderizarCardSelecao() {
+      const ing = ingredienteAtual;
+      document.getElementById("nomeIngredienteSelecionado").textContent = ing.nome;
+      document.getElementById("subIngredienteSelecionado").textContent =
+        `${(ing.kcal || 0).toFixed(0)} kcal · P${(ing.proteina_g || 0).toFixed(1)} C${(ing.carboidrato_g || 0).toFixed(1)} G${(ing.gordura_g || 0).toFixed(1)} Fib${(ing.fibra_g || 0).toFixed(1)} /100g`;
+
+      document.querySelectorAll("#toggleUnidade button").forEach((b) => {
+        b.classList.toggle("ativo", b.dataset.unidade === unidadeAtual);
+      });
+
+      const precisaMedida = unidadeAtual === "colher" && !pesoColherAtual;
+      document.getElementById("avisoSemMedida").style.display = precisaMedida ? "block" : "none";
+
+      if (unidadeAtual === "colher" && pesoColherAtual) {
+        document.getElementById("valorQuantidade").textContent = (quantidadeGramas / pesoColherAtual).toFixed(2);
+        document.getElementById("unidadeQuantidade").textContent = "colher(es) de sopa";
+      } else {
+        document.getElementById("valorQuantidade").textContent = quantidadeGramas.toFixed(0);
+        document.getElementById("unidadeQuantidade").textContent = "g";
       }
-      adicionarIngredienteComQuantidade(ingredienteAtual, qtd);
-      ingredienteAtual = null;
-      document.getElementById("selecao").style.display = "none";
+
+      const fator = quantidadeGramas / 100;
+      document.getElementById("previewNutrientes").innerHTML = ["kcal", "proteina_g", "carboidrato_g", "gordura_g", "fibra_g"]
+        .map((chave) => `
+          <div>
+            <span class="valor">${((ing[chave] || 0) * fator).toFixed(chave === "kcal" ? 0 : 1)}</span>
+            <span>${chave === "kcal" ? "kcal" : ROTULOS[chave].slice(0, 4).toLowerCase()}</span>
+          </div>
+        `).join("");
+    }
+
+    document.querySelectorAll("#toggleUnidade button").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        unidadeAtual = btn.dataset.unidade;
+        renderizarCardSelecao();
+      });
     });
 
-    function adicionarIngredienteComQuantidade(ing, qtd) {
-      const fator = qtd / 100;
+    document.getElementById("btnSalvarMedidaRapida").addEventListener("click", async () => {
+      const valor = parseFloat(document.getElementById("novaMedidaGramas").value);
+      if (!valor || valor <= 0) { alert("Digite um valor válido em gramas."); return; }
+
+      const { error } = await supabaseClient.from("medidas_ingrediente").insert({
+        ingrediente_id: ingredienteAtual.id,
+        nome_medida: "Colher de sopa",
+        peso_g: valor,
+      });
+
+      if (error) { alert("Erro ao salvar conversão: " + error.message); return; }
+
+      pesoColherAtual = valor;
+      quantidadeGramas = valor;
+      document.getElementById("novaMedidaGramas").value = "";
+      renderizarCardSelecao();
+    });
+
+    document.getElementById("btnMenos").addEventListener("click", () => {
+      quantidadeGramas = Math.max(5, quantidadeGramas - 5);
+      renderizarCardSelecao();
+    });
+    document.getElementById("btnMais").addEventListener("click", () => {
+      quantidadeGramas += 5;
+      renderizarCardSelecao();
+    });
+
+    document.getElementById("btnAdicionar").addEventListener("click", () => {
+      adicionarIngredienteComQuantidade(ingredienteAtual, quantidadeGramas, unidadeAtual === "colher" ? "colher" : "g", pesoColherAtual);
+      document.getElementById("selecao").style.display = "none";
+      ingredienteAtual = null;
+    });
+
+    function adicionarIngredienteComQuantidade(ing, qtd, unidade, pesoColher) {
       itensRefeicao.push({
         ingrediente_id: ing.id,
         nome: ing.nome,
+        kcalPer100: ing.kcal || 0,
+        proteinaPer100: ing.proteina_g || 0,
+        carboidratoPer100: ing.carboidrato_g || 0,
+        gorduraPer100: ing.gordura_g || 0,
+        fibraPer100: ing.fibra_g || 0,
         quantidade_g: qtd,
-        kcal: (ing.kcal || 0) * fator,
-        proteina_g: (ing.proteina_g || 0) * fator,
-        carboidrato_g: (ing.carboidrato_g || 0) * fator,
-        gordura_g: (ing.gordura_g || 0) * fator,
-        fibra_g: (ing.fibra_g || 0) * fator,
+        unidade: unidade || "g",
+        pesoColher: pesoColher || null,
+        mostrarAviso: false,
       });
       renderizarLista();
     }
 
+    function itemTotais(item) {
+      const fator = item.quantidade_g / 100;
+      return {
+        kcal: item.kcalPer100 * fator,
+        proteina_g: item.proteinaPer100 * fator,
+        carboidrato_g: item.carboidratoPer100 * fator,
+        gordura_g: item.gorduraPer100 * fator,
+        fibra_g: item.fibraPer100 * fator,
+      };
+    }
+
     function calcularTotaisDraft() {
       return itensRefeicao.reduce((totais, item) => {
-        totais.kcal += item.kcal;
-        totais.proteina_g += item.proteina_g;
-        totais.carboidrato_g += item.carboidrato_g;
-        totais.gordura_g += item.gordura_g;
-        totais.fibra_g += item.fibra_g;
+        const t = itemTotais(item);
+        totais.kcal += t.kcal;
+        totais.proteina_g += t.proteina_g;
+        totais.carboidrato_g += t.carboidrato_g;
+        totais.gordura_g += t.gordura_g;
+        totais.fibra_g += t.fibra_g;
         return totais;
       }, totaisZerados());
     }
@@ -649,21 +866,92 @@
       renderizarLista();
     }
 
-    function renderizarLista() {
-      const ul = document.getElementById("itens");
-      ul.innerHTML = "";
+    function ajustarItem(index, delta) {
+      const item = itensRefeicao[index];
+      item.quantidade_g = Math.max(5, item.quantidade_g + delta);
+      renderizarLista();
+    }
 
-      itensRefeicao.forEach((item, index) => {
-        const li = document.createElement("li");
-        li.innerHTML = `<span>${item.nome} (${item.quantidade_g}g)</span>
-          <button onclick="removerItem(${index})">×</button>`;
-        ul.appendChild(li);
+    function alternarUnidadeItem(index, unidade) {
+      const item = itensRefeicao[index];
+      if (unidade === "colher" && !item.pesoColher) {
+        item.mostrarAviso = true;
+        renderizarLista();
+        return;
+      }
+      item.unidade = unidade;
+      item.mostrarAviso = false;
+      renderizarLista();
+    }
+
+    async function salvarMedidaItem(index) {
+      const input = document.getElementById(`novaMedidaItem_${index}`);
+      const valor = parseFloat(input.value);
+      if (!valor || valor <= 0) { alert("Digite um valor válido em gramas."); return; }
+
+      const item = itensRefeicao[index];
+      const { error } = await supabaseClient.from("medidas_ingrediente").insert({
+        ingrediente_id: item.ingrediente_id,
+        nome_medida: "Colher de sopa",
+        peso_g: valor,
       });
 
+      if (error) { alert("Erro ao salvar conversão: " + error.message); return; }
+
+      item.pesoColher = valor;
+      item.unidade = "colher";
+      item.mostrarAviso = false;
+      renderizarLista();
+    }
+
+    function renderizarItemLi(item, i) {
+      const t = itemTotais(item);
+      const valorExibido = (item.unidade === "colher" && item.pesoColher)
+        ? (item.quantidade_g / item.pesoColher).toFixed(2)
+        : item.quantidade_g.toFixed(0);
+
+      const avisoHtml = item.mostrarAviso ? `
+        <div class="aviso-medida-item">
+          <input type="number" id="novaMedidaItem_${i}" placeholder="1 colher de sopa = quantos gramas?">
+          <button onclick="salvarMedidaItem(${i})">Salvar</button>
+        </div>
+      ` : "";
+
+      return `
+        <li>
+          <div class="item-cabecalho">
+            <strong>${item.nome}</strong>
+            <button class="btn-remover" onclick="removerItem(${i})">×</button>
+          </div>
+          <div class="item-stepper">
+            <button class="btn-passo" onclick="ajustarItem(${i},-5)">–</button>
+            <span class="item-valor">${valorExibido}</span>
+            <div class="item-toggle-unidade">
+              <button class="${item.unidade === "g" ? "ativo" : ""}" onclick="alternarUnidadeItem(${i},'g')">g</button>
+              <button class="${item.unidade === "colher" ? "ativo" : ""}" onclick="alternarUnidadeItem(${i},'colher')">cs</button>
+            </div>
+            <button class="btn-passo" onclick="ajustarItem(${i},5)">+</button>
+          </div>
+          ${avisoHtml}
+          <div class="item-macros">
+            <span class="pill pill-kcal">${t.kcal.toFixed(0)} kcal</span>
+            <span class="pill pill-prot">P ${t.proteina_g.toFixed(1)}g</span>
+            <span class="pill pill-carb">C ${t.carboidrato_g.toFixed(1)}g</span>
+            <span class="pill pill-gord">G ${t.gordura_g.toFixed(1)}g</span>
+            <span class="pill pill-fib">Fib ${t.fibra_g.toFixed(1)}g</span>
+          </div>
+        </li>
+      `;
+    }
+
+    function renderizarLista() {
+      const ul = document.getElementById("itens");
+
       document.getElementById("tituloItens").textContent = `Nova refeição · ${itensRefeicao.length} ${itensRefeicao.length === 1 ? "item" : "itens"}`;
-      if (itensRefeicao.length === 0) {
-        ul.innerHTML = `<p class="vazio">Nenhum ingrediente ainda — busque acima pra começar.</p>`;
-      }
+
+      ul.innerHTML = itensRefeicao.length === 0
+        ? `<p class="vazio">Nenhum ingrediente ainda — busque acima pra começar.</p>`
+        : itensRefeicao.map((item, i) => renderizarItemLi(item, i)).join("");
 
       const draft = calcularTotaisDraft();
 
@@ -763,6 +1051,19 @@
       document.getElementById("toggleSemana").classList.toggle("ativo", modo === "semana");
     }
 
+    document.getElementById("btnModoBarras").addEventListener("click", () => {
+      modoVisualizacaoDia = "barras";
+      document.getElementById("btnModoBarras").classList.add("ativo");
+      document.getElementById("btnModoCards").classList.remove("ativo");
+      renderizarConteudoDia();
+    });
+    document.getElementById("btnModoCards").addEventListener("click", () => {
+      modoVisualizacaoDia = "cards";
+      document.getElementById("btnModoCards").classList.add("ativo");
+      document.getElementById("btnModoBarras").classList.remove("ativo");
+      renderizarConteudoDia();
+    });
+
     document.querySelectorAll("#tabsMacro button").forEach((btn) => {
       btn.addEventListener("click", () => {
         macroSemanaAtual = btn.dataset.macro;
@@ -788,24 +1089,65 @@
       `;
     }
 
+    function renderizarDiaCards(totalHoje, meta) {
+      if (!meta) return `<p class="vazio">Nenhuma meta diária ativa. Cadastre uma na aba Metas.</p>`;
+
+      const heroPercentual = meta.kcal_meta ? Math.min((totalHoje.kcal / meta.kcal_meta) * 100, 100) : 0;
+      const heroFalta = meta.kcal_meta ? Math.max(meta.kcal_meta - totalHoje.kcal, 0) : null;
+
+      let html = `
+        <div class="cards-progresso-hero">
+          <div class="rotulo-macro" style="color:${CORES.kcal}">CALORIAS</div>
+          <div class="numero-grande">${totalHoje.kcal.toFixed(0)} <small>/ ${meta.kcal_meta ?? "?"} kcal</small></div>
+          <div class="barra-fundo" style="height:9px;"><div class="barra-preenchida" style="width:${heroPercentual}%; background:${CORES.kcal}"></div></div>
+          ${heroFalta !== null ? `<div class="falta-txt">Faltam ${heroFalta.toFixed(1)} kcal</div>` : ""}
+        </div>
+        <div class="grid-progresso-macros">
+      `;
+
+      ["proteina_g", "carboidrato_g", "gordura_g", "fibra_g"].forEach((chave) => {
+        const metaValor = meta[META_CHAVE[chave]];
+        const valor = totalHoje[chave];
+        const pct = metaValor ? Math.min((valor / metaValor) * 100, 100) : 0;
+        html += `
+          <div class="card-progresso-macro">
+            <div class="rotulo-macro" style="color:${CORES[chave]}">${ROTULOS[chave].toUpperCase()}</div>
+            <div class="numero-medio">${valor.toFixed(1)} <small>/ ${metaValor ?? "?"}g</small></div>
+            <div class="barra-fundo" style="height:7px;"><div class="barra-preenchida" style="width:${pct}%; background:${CORES[chave]}"></div></div>
+          </div>
+        `;
+      });
+
+      html += `</div>`;
+      return html;
+    }
+
+    function renderizarConteudoDia() {
+      const div = document.getElementById("conteudoDia");
+      if (!metaAtivaCache) {
+        div.innerHTML = `<p class="vazio">Nenhuma meta diária ativa. Cadastre uma na aba Metas.</p>`;
+        return;
+      }
+      if (modoVisualizacaoDia === "cards") {
+        div.innerHTML = renderizarDiaCards(ultimoTotalHojeCache, metaAtivaCache);
+      } else {
+        div.innerHTML = `<div class="card-grafico">` +
+          ["kcal", "proteina_g", "carboidrato_g", "gordura_g", "fibra_g"]
+            .map((chave) => barraProgresso(chave, ultimoTotalHojeCache[chave], metaAtivaCache[META_CHAVE[chave]]))
+            .join("") +
+          `</div>`;
+      }
+    }
+
     async function carregarProgresso() {
       const hoje = new Date();
       document.getElementById("dataHoje").textContent =
         "Hoje, " + hoje.toLocaleDateString("pt-BR", { day: "2-digit", month: "long" });
 
       metaAtivaCache = await buscarMetaAtiva();
-      const totalHoje = await calcularConsumidoHoje();
+      ultimoTotalHojeCache = await calcularConsumidoHoje();
 
-      const divDia = document.getElementById("progressoDia");
-      if (!metaAtivaCache) {
-        divDia.innerHTML = `<p class="vazio">Nenhuma meta diária ativa. Cadastre uma na aba Metas.</p>`;
-      } else {
-        divDia.innerHTML = `<div class="card-grafico">` +
-          ["kcal", "proteina_g", "carboidrato_g", "gordura_g", "fibra_g"]
-            .map((chave) => barraProgresso(chave, totalHoje[chave], metaAtivaCache[META_CHAVE[chave]]))
-            .join("") +
-          `</div>`;
-      }
+      renderizarConteudoDia();
 
       await carregarDadosSemana();
       renderizarGraficoSemanal();
