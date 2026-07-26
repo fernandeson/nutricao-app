@@ -1,323 +1,368 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Nutrição App</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg: #F5F7F1;
-      --ink: #1F2B1E;
-      --ink-soft: #5B6B57;
-      --linha: #DDE3D3;
-      --card: #FFFFFF;
-      --kcal: #2F5233;
-      --proteina: #C1542C;
-      --carboidrato: #D9A441;
-      --gordura: #6B7A3A;
-      --raio: 14px;
-      --raio-pequeno: 8px;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nutrição App</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F3E9D6;
+    --card: #EAD9BC;
+    --card-2: #E4D0AC;
+    --ink: #2B1B12;
+    --ink-soft: #8A7A63;
+    --vermelho: #C9463B;
+    --vermelho-escuro: #7A2426;
+    --pessego: #E2A184;
+    --oliva: #7C8B4E;
+    --verde-escuro: #455B2E;
+    --verde-fundo: #E9F1E1;
+    --verde-texto: #4C6B34;
+    --vermelho-fundo: #F7E2DE;
+    --raio: 18px;
+    --raio-pequeno: 12px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 20px 16px 90px;
+  }
+  h1, h2 {
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: 24px;
+    margin: 0;
+  }
+  h3 {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin: 22px 0 10px;
+  }
+  .topo { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+  .link-favoritos {
+    background: none; border: none; color: var(--vermelho); font-weight: 600;
+    font-size: 14px; width: auto; padding: 0; margin: 0; cursor: pointer;
+  }
+  input, select {
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    padding: 13px 16px;
+    width: 100%;
+    border: 1.5px solid var(--card-2);
+    border-radius: 999px;
+    background: var(--card);
+    color: var(--ink);
+    margin-bottom: 10px;
+  }
+  input::placeholder { color: var(--ink-soft); }
+  input:focus, select:focus { outline: none; border-color: var(--vermelho); }
+  button { font-family: 'Inter', sans-serif; cursor: pointer; }
+  .btn-principal {
+    font-size: 16px; font-weight: 700; padding: 15px; width: 100%;
+    background: var(--vermelho); color: white; border: none; border-radius: 999px; margin-top: 10px;
+  }
+  .btn-principal:active { opacity: 0.85; }
 
-    * { box-sizing: border-box; }
+  /* pills de horário */
+  .pills { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+  .pills button {
+    flex: 1; min-width: 60px; padding: 10px 6px; font-size: 13px; font-weight: 600;
+    border: 1.5px solid var(--card-2); border-radius: 999px; background: var(--card); color: var(--ink);
+  }
+  .pills button.ativo { background: var(--vermelho); color: white; border-color: var(--vermelho); }
 
-    body {
-      font-family: 'Inter', sans-serif;
-      background: var(--bg);
-      color: var(--ink);
-      max-width: 480px;
-      margin: 0 auto;
-      padding: 20px 16px 88px;
-      -webkit-font-smoothing: antialiased;
-    }
+  /* favoritos: bottom sheet */
+  .backdrop {
+    display: none; position: fixed; inset: 0; background: rgba(20,12,6,0.45); z-index: 19;
+  }
+  .backdrop.aberto { display: block; }
+  #painelFavoritos {
+    position: fixed; left: 0; right: 0; bottom: 0; max-width: 480px; margin: 0 auto;
+    background: var(--card); border-radius: 22px 22px 0 0; z-index: 20;
+    transform: translateY(105%); transition: transform .28s ease;
+    max-height: 65vh; overflow-y: auto; padding: 10px 4px 24px;
+  }
+  #painelFavoritos.aberto { transform: translateY(0); }
+  #painelFavoritos .puxador { width: 40px; height: 5px; background: var(--card-2); border-radius: 999px; margin: 6px auto 14px; }
+  #painelFavoritos .titulo-sheet { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 700; padding: 0 18px 10px; }
+  #painelFavoritos .item-fav { padding: 14px 18px; border-bottom: 1px solid var(--card-2); font-size: 15px; cursor: pointer; }
+  #painelFavoritos .item-fav:last-child { border-bottom: none; }
+  #painelFavoritos p { padding: 12px 18px; color: var(--ink-soft); font-size: 14px; }
 
-    h2 {
-      font-family: 'Fraunces', serif;
-      font-weight: 700;
-      font-size: 26px;
-      margin: 4px 0 20px;
-      letter-spacing: -0.01em;
-    }
+  /* cards de ingrediente na busca */
+  #sugestoes { display: flex; flex-direction: column; gap: 8px; }
+  .card-ingrediente {
+    background: var(--card); border-radius: var(--raio-pequeno); padding: 12px 14px;
+    display: flex; justify-content: space-between; align-items: center; gap: 10px;
+  }
+  .card-ingrediente .info { cursor: pointer; flex: 1; }
+  .card-ingrediente .info strong { display: block; font-size: 14px; margin-bottom: 2px; }
+  .card-ingrediente .info .sub { font-size: 12px; color: var(--ink-soft); }
+  .btn-add-rapido {
+    background: var(--vermelho); color: white; border: none; border-radius: 999px;
+    padding: 8px 14px; font-size: 13px; font-weight: 700; white-space: nowrap;
+  }
 
-    h3 {
-      font-family: 'Fraunces', serif;
-      font-weight: 500;
-      font-size: 17px;
-      margin: 24px 0 10px;
-      color: var(--ink);
-    }
+  #selecao { background: var(--card); border-radius: var(--raio-pequeno); padding: 14px; margin-top: 8px; }
 
-    h4 {
-      font-family: 'Inter', sans-serif;
-      font-weight: 600;
-      font-size: 14px;
-      margin: 0 0 10px;
-      color: var(--ink-soft);
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-    }
+  /* itens da refeição */
+  #itens { list-style: none; padding: 0; margin: 0; }
+  #itens li {
+    display: flex; justify-content: space-between; align-items: center;
+    background: var(--card); padding: 10px 14px; border-radius: var(--raio-pequeno);
+    margin-bottom: 6px; font-size: 14px;
+  }
+  #itens li button {
+    width: 24px; height: 24px; padding: 0; background: var(--card-2); color: var(--ink-soft);
+    border: none; border-radius: 50%; font-size: 13px;
+  }
+  .vazio { color: var(--ink-soft); font-size: 14px; text-align: center; padding: 24px 12px; }
 
-    label {
-      display: block;
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--ink-soft);
-      margin: 14px 0 4px;
-    }
+  /* rodapé Lançar: meta diária + hero cards */
+  .topo-meta { display: flex; justify-content: space-between; align-items: baseline; margin: 22px 0 10px; flex-wrap: wrap; gap: 4px; }
+  .topo-meta h3 { margin: 0; }
+  .draft-info { font-size: 12px; color: var(--ink-soft); }
 
-    input, select {
-      font-family: 'Inter', sans-serif;
-      font-size: 16px;
-      padding: 12px 14px;
-      width: 100%;
-      border: 1.5px solid var(--linha);
-      border-radius: var(--raio-pequeno);
-      background: var(--card);
-      color: var(--ink);
-    }
+  .cards-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .card-meta-macro { border-radius: var(--raio); padding: 14px; background: var(--verde-fundo); }
+  .card-meta-macro.excedido { background: var(--vermelho-fundo); }
+  .card-meta-macro .linha-titulo { display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; margin-bottom: 6px; }
+  .card-meta-macro .status { color: var(--verde-texto); font-weight: 600; }
+  .card-meta-macro.excedido .status { color: var(--vermelho-escuro); }
+  .card-meta-macro .numero { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+  .card-meta-macro .numero small { font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 500; color: var(--ink-soft); }
+  .barra-fundo { background: rgba(0,0,0,0.08); border-radius: 6px; height: 8px; overflow: hidden; }
+  .barra-preenchida { height: 100%; border-radius: 6px; background: var(--verde-texto); }
+  .card-meta-macro.excedido .barra-preenchida { background: var(--vermelho-escuro); }
 
-    input:focus, select:focus {
-      outline: none;
-      border-color: var(--kcal);
-    }
+  .checkbox-linha { display: flex; align-items: center; gap: 8px; margin: 16px 0 0; font-size: 14px; }
+  .checkbox-linha input { width: auto; margin: 0; }
+  #mensagemSalvar { font-size: 13px; color: var(--verde-escuro); font-weight: 600; min-height: 18px; margin-top: 6px; }
 
-    button {
-      font-family: 'Inter', sans-serif;
-      font-size: 15px;
-      font-weight: 600;
-      padding: 13px;
-      width: 100%;
-      background: var(--kcal);
-      color: white;
-      border: none;
-      border-radius: var(--raio-pequeno);
-      margin-top: 10px;
-      cursor: pointer;
-    }
+  /* progresso: tabs de macro + gráfico */
+  .data-topo { color: var(--ink-soft); font-size: 13px; text-align: right; margin-top: -30px; margin-bottom: 20px; }
+  .toggle-linha { display: flex; background: var(--card); border-radius: 999px; padding: 4px; margin-bottom: 16px; }
+  .toggle-linha button {
+    flex: 1; padding: 10px; border: none; background: none; border-radius: 999px;
+    font-size: 14px; font-weight: 700; color: var(--ink);
+  }
+  .toggle-linha button.ativo { background: var(--vermelho); color: white; }
 
-    button:active { opacity: 0.85; }
+  .tabs-macro { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
+  .tabs-macro button {
+    padding: 8px 14px; font-size: 13px; font-weight: 600; border-radius: 999px;
+    border: 1.5px solid var(--card-2); background: var(--card); color: var(--ink);
+  }
+  .tabs-macro button.ativo { background: var(--vermelho); color: white; border-color: var(--vermelho); }
 
-    /* ---------- Navegação inferior fixa ---------- */
-    nav {
-      position: fixed;
-      bottom: 0; left: 0; right: 0;
-      background: var(--card);
-      border-top: 1px solid var(--linha);
-      display: flex;
-      max-width: 480px;
-      margin: 0 auto;
-      padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
-      z-index: 10;
-    }
+  .card-grafico { background: var(--card); border-radius: var(--raio); padding: 18px; }
+  .card-grafico .titulo-grafico { display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; color: var(--vermelho); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 4px; }
+  .card-grafico .titulo-grafico .meta-txt { color: var(--ink-soft); text-transform: none; font-weight: 600; letter-spacing: 0; }
+  .legenda-grafico { display: flex; gap: 16px; font-size: 12px; color: var(--ink-soft); margin-top: 8px; }
+  .legenda-grafico span { display: flex; align-items: center; gap: 5px; }
+  .legenda-grafico .quadrado { width: 9px; height: 9px; border-radius: 2px; display: inline-block; }
 
-    nav button {
-      flex: 1;
-      background: none;
-      color: var(--ink-soft);
-      font-size: 12px;
-      font-weight: 600;
-      margin: 0;
-      padding: 6px 4px 4px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-    }
+  /* histórico */
+  .historico-item { background: var(--card); border-radius: var(--raio); padding: 16px; margin-bottom: 10px; }
+  .historico-item .cabecalho { display: flex; justify-content: space-between; align-items: flex-start; }
+  .historico-item strong { font-family: 'Fraunces', serif; font-size: 16px; }
+  .historico-item .hora { color: var(--ink-soft); font-size: 12px; white-space: nowrap; }
+  .pill-tipo {
+    display: inline-block; border: 1.5px solid var(--vermelho); color: var(--vermelho);
+    border-radius: 999px; padding: 3px 10px; font-size: 12px; font-weight: 600; margin: 6px 0;
+  }
+  .historico-item .kcal-grande { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 700; margin: 4px 0; }
+  .historico-item .macros { font-size: 13px; color: var(--ink); }
+  .historico-item .ingredientes { font-size: 12px; color: var(--ink-soft); margin-top: 6px; }
+  #btnExportarCSV {
+    background: none; border: 1.5px solid var(--vermelho); color: var(--vermelho);
+    border-radius: 999px; padding: 10px 16px; font-size: 13px; font-weight: 700; width: auto; margin-bottom: 16px;
+  }
 
-    nav button svg { width: 22px; height: 22px; stroke: var(--ink-soft); fill: none; stroke-width: 1.8; }
+  /* metas */
+  .form-metas { background: var(--card); border-radius: var(--raio); padding: 16px; margin-bottom: 16px; }
+  .form-metas label { display: block; font-size: 12px; color: var(--ink-soft); margin: 10px 0 3px; font-weight: 600; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .grid-2 input { margin-bottom: 0; }
+  .meta-card { background: var(--card); border-radius: var(--raio-pequeno); padding: 14px; margin-bottom: 8px; }
+  .meta-card .cabecalho { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .meta-card strong { font-family: 'Fraunces', serif; font-size: 15px; }
+  .meta-card .periodo { font-size: 11px; border: 1px solid var(--vermelho); color: var(--vermelho); border-radius: 999px; padding: 3px 8px; }
+  .pill-macro { display: inline-block; background: var(--bg); border-radius: 999px; padding: 4px 10px; font-size: 12px; font-weight: 600; margin: 2px 4px 2px 0; }
 
-    nav button.ativo { color: var(--kcal); }
-    nav button.ativo svg { stroke: var(--kcal); }
-
-    /* ---------- Listas de sugestão / favoritos ---------- */
-    #sugestoes, #favoritos {
-      background: var(--card);
-      border-radius: var(--raio-pequeno);
-      overflow: hidden;
-      margin-top: 4px;
-    }
-    #sugestoes div, #favoritos div {
-      padding: 12px 14px;
-      border-bottom: 1px solid var(--linha);
-      font-size: 15px;
-    }
-    #sugestoes div:last-child, #favoritos div:last-child { border-bottom: none; }
-    #favoritos div { cursor: pointer; }
-    #favoritos div:active { background: var(--bg); }
-    #favoritos p, #sugestoes p { padding: 12px 14px; color: var(--ink-soft); font-size: 14px; }
-
-    /* ---------- Itens da refeição atual ---------- */
-    #itens { list-style: none; padding: 0; margin: 0; }
-    #itens li {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: var(--card);
-      padding: 10px 14px;
-      border-radius: var(--raio-pequeno);
-      margin-bottom: 6px;
-      font-size: 15px;
-    }
-    #itens li button {
-      width: 26px; height: 26px;
-      padding: 0;
-      margin: 0;
-      background: var(--bg);
-      color: var(--ink-soft);
-      border-radius: 50%;
-      font-size: 14px;
-      line-height: 1;
-    }
-
-    /* ---------- Totais ---------- */
-    #totais {
-      background: var(--card);
-      padding: 16px;
-      border-radius: var(--raio);
-      margin-top: 14px;
-      border: 1px solid var(--linha);
-    }
-    #totais strong {
-      font-family: 'Fraunces', serif;
-      font-size: 15px;
-      display: block;
-      margin-bottom: 6px;
-      color: var(--ink-soft);
-      font-weight: 500;
-    }
-    #totalKcal {
-      font-family: 'JetBrains Mono', monospace;
-      font-weight: 700;
-      font-size: 28px;
-      color: var(--kcal);
-      margin: 2px 0;
-    }
-    #totalMacros {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 13px;
-      color: var(--ink-soft);
-    }
-
-    .checkbox-linha { display: flex; align-items: center; gap: 8px; margin-top: 14px; }
-    .checkbox-linha input { width: auto; }
-    .checkbox-linha label { margin: 0; }
-
-    #mensagemSalvar { font-size: 14px; color: var(--kcal); font-weight: 500; min-height: 20px; }
-
-    /* ---------- Barras de progresso ---------- */
-    .linha-progresso { margin-bottom: 14px; }
-    .linha-progresso .rotulo {
-      display: flex;
-      justify-content: space-between;
-      font-size: 13px;
-      margin-bottom: 5px;
-    }
-    .linha-progresso .rotulo span:first-child { font-weight: 600; }
-    .linha-progresso .rotulo span:last-child {
-      font-family: 'JetBrains Mono', monospace;
-      color: var(--ink-soft);
-    }
-    .barra-fundo { background: var(--linha); border-radius: 6px; height: 10px; overflow: hidden; }
-    .barra-preenchida { height: 100%; border-radius: 6px; }
-
-    .progresso-bloco {
-      background: var(--card);
-      border: 1px solid var(--linha);
-      border-radius: var(--raio);
-      padding: 16px;
-      margin-bottom: 10px;
-    }
-    .progresso-bloco h4 { margin-bottom: 12px; }
-
-    /* ---------- Histórico ---------- */
-    .historico-item {
-      background: var(--card);
-      border: 1px solid var(--linha);
-      border-radius: var(--raio);
-      padding: 14px;
-      margin-bottom: 10px;
-    }
-    .historico-item strong { font-family: 'Fraunces', serif; font-size: 16px; }
-    .historico-item small { color: var(--ink-soft); font-size: 12px; }
-    .historico-item .macros {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 13px;
-      margin: 6px 0;
-      color: var(--ink);
-    }
-
-    #btnExportarCSV { background: var(--card); color: var(--kcal); border: 1.5px solid var(--kcal); }
-  </style>
+  /* navegação inferior */
+  nav {
+    position: fixed; bottom: 0; left: 0; right: 0; background: var(--card);
+    display: flex; max-width: 480px; margin: 0 auto; padding: 8px 4px calc(8px + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--card-2); z-index: 10;
+  }
+  nav button {
+    flex: 1; background: none; border: none; color: var(--ink-soft); font-size: 11px; font-weight: 700;
+    display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 2px;
+  }
+  nav button svg { width: 20px; height: 20px; stroke: var(--ink-soft); fill: none; stroke-width: 2; }
+  nav button.ativo { color: var(--vermelho); }
+  nav button.ativo svg { stroke: var(--vermelho); }
+</style>
 </head>
 <body>
 
   <!-- ===================== TELA: LANÇAR ===================== -->
   <div id="viewLancar">
-    <h2>Lançar refeição</h2>
+    <div class="topo">
+      <h2>Lançar refeição</h2>
+      <button class="link-favoritos" id="btnToggleFavoritos">★ Favoritos</button>
+    </div>
 
-    <label for="tipoRefeicao">Horário</label>
-    <select id="tipoRefeicao">
-      <option value="Café da manhã">Café da manhã</option>
-      <option value="Almoço">Almoço</option>
-      <option value="Lanche da tarde">Lanche da tarde</option>
-      <option value="Jantar">Jantar</option>
-      <option value="Ceia">Ceia</option>
-    </select>
+    <div class="pills" id="pillsHorario">
+      <button data-valor="Café da manhã" class="ativo">Café</button>
+      <button data-valor="Almoço">Almoço</button>
+      <button data-valor="Lanche da tarde">Lanche</button>
+      <button data-valor="Jantar">Jantar</button>
+      <button data-valor="Ceia">Ceia</button>
+    </div>
 
-    <label for="nomePrato">Nome da refeição</label>
-    <input type="text" id="nomePrato" placeholder="Ex: Tapioca de frango">
-
-    <h3>Favoritos</h3>
-    <div id="favoritos">Carregando favoritos...</div>
-
-    <h3>Ingredientes</h3>
+    <input type="text" id="nomePrato" placeholder="Nome da refeição (ex: Tapioca de frango)">
     <input type="text" id="busca" placeholder="Buscar ingrediente...">
     <div id="sugestoes"></div>
 
     <div id="selecao" style="display:none;">
-      <p id="ingredienteSelecionado"></p>
-      <input type="number" id="quantidade" placeholder="Quantidade em gramas">
-      <button id="btnAdicionar">Adicionar à refeição</button>
+      <p id="ingredienteSelecionado" style="margin:0 0 8px; font-weight:600;"></p>
+      <input type="number" id="quantidade" placeholder="Quantidade em gramas" value="100">
+      <button class="btn-principal" id="btnAdicionar" style="background:var(--ink);">Adicionar à refeição</button>
     </div>
 
-    <h3>Itens desta refeição</h3>
+    <h3 id="tituloItens">Nova refeição · 0 itens</h3>
     <ul id="itens"></ul>
 
-    <div id="totais">
-      <strong>Total da refeição</strong>
-      <div id="totalKcal">0 kcal</div>
-      <div id="totalMacros">P: 0g · C: 0g · G: 0g</div>
+    <div class="topo-meta">
+      <h3 style="margin:0;">Meta diária</h3>
+      <span class="draft-info" id="draftInfo">Esta refeição: C 0g · G 0g · Fib 0g</span>
     </div>
+    <div class="cards-meta" id="cardsMeta"></div>
 
     <div class="checkbox-linha">
       <input type="checkbox" id="marcarFavorito">
       <label for="marcarFavorito">Salvar também como favorito</label>
     </div>
 
-    <button id="btnSalvar">Salvar refeição</button>
+    <button class="btn-principal" id="btnSalvar">Salvar refeição</button>
     <p id="mensagemSalvar"></p>
+  </div>
+
+  <!-- painel de favoritos: bottom sheet -->
+  <div class="backdrop" id="backdropFavoritos"></div>
+  <div id="painelFavoritos">
+    <div class="puxador"></div>
+    <div class="titulo-sheet">Favoritos</div>
+    <div id="listaFavoritosSheet"></div>
   </div>
 
   <!-- ===================== TELA: PROGRESSO ===================== -->
   <div id="viewProgresso" style="display:none;">
-    <h2>Progresso de hoje</h2>
-    <div id="progressoDiario">Carregando...</div>
+    <h2>Progresso da meta</h2>
+    <div class="data-topo" id="dataHoje"></div>
 
-    <h3>Por refeição (hoje)</h3>
-    <div id="progressoPorTipo"></div>
+    <div class="toggle-linha">
+      <button id="toggleDia" class="ativo">Dia</button>
+      <button id="toggleSemana">7 dias</button>
+    </div>
 
-    <h3>Últimos 7 dias</h3>
-    <div id="progressoSemanal">Carregando...</div>
+    <div id="progressoDia"></div>
+
+    <div id="progressoSemana" style="display:none;">
+      <div class="tabs-macro" id="tabsMacro">
+        <button data-macro="kcal" class="ativo">Calorias</button>
+        <button data-macro="proteina_g">Proteína</button>
+        <button data-macro="carboidrato_g">Carboidrato</button>
+        <button data-macro="gordura_g">Gordura</button>
+        <button data-macro="fibra_g">Fibra</button>
+      </div>
+      <div class="card-grafico">
+        <div class="titulo-grafico">
+          <span id="tituloMacroGrafico">CALORIAS</span>
+          <span class="meta-txt" id="metaTextoGrafico"></span>
+        </div>
+        <div id="graficoSemanalSvg"></div>
+        <div class="legenda-grafico">
+          <span><i class="quadrado" id="legendaCor" style="background:var(--vermelho)"></i> Consumo do dia</span>
+          <span>┄┄ Meta diária</span>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- ===================== TELA: HISTÓRICO ===================== -->
   <div id="viewHistorico" style="display:none;">
-    <h2>Histórico</h2>
-    <button id="btnExportarCSV">Exportar CSV</button>
+    <div class="topo">
+      <h2>Histórico</h2>
+      <button id="btnExportarCSV">Exportar CSV</button>
+    </div>
     <div id="listaHistorico">Carregando...</div>
+  </div>
+
+  <!-- ===================== TELA: METAS ===================== -->
+  <div id="viewMetas" style="display:none;">
+    <h2>Metas</h2>
+
+    <h3>Nova meta diária</h3>
+    <div class="form-metas">
+      <label for="metaNome">Nome da meta</label>
+      <input type="text" id="metaNome" placeholder="Ex: Cutting verão">
+
+      <div class="grid-2">
+        <div>
+          <label for="metaInicio">Início</label>
+          <input type="date" id="metaInicio">
+        </div>
+        <div>
+          <label for="metaFim">Fim (opcional)</label>
+          <input type="date" id="metaFim">
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div>
+          <label for="metaKcal">Calorias (kcal)</label>
+          <input type="number" id="metaKcal">
+        </div>
+        <div>
+          <label for="metaProteina">Proteína (g)</label>
+          <input type="number" id="metaProteina">
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div>
+          <label for="metaCarboidrato">Carboidrato (g)</label>
+          <input type="number" id="metaCarboidrato">
+        </div>
+        <div>
+          <label for="metaGordura">Gordura (g)</label>
+          <input type="number" id="metaGordura">
+        </div>
+      </div>
+
+      <label for="metaFibra">Fibra (g)</label>
+      <input type="number" id="metaFibra">
+
+      <button class="btn-principal" id="btnSalvarMeta">Salvar meta</button>
+      <p id="mensagemMeta"></p>
+    </div>
+
+    <h3>Metas cadastradas</h3>
+    <div id="listaMetas">Carregando...</div>
   </div>
 
   <!-- ===================== NAVEGAÇÃO INFERIOR ===================== -->
@@ -334,6 +379,10 @@
       <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10" stroke-linecap="round"/></svg>
       Histórico
     </button>
+    <button id="navMetas">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/></svg>
+      Metas
+    </button>
   </nav>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -342,35 +391,115 @@
     const supabaseKey = "sb_publishable_ydgbE3WSndTe_1hn05pylQ_zJ30jfMR";
     const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-    const CORES = { kcal: "#2F5233", proteina_g: "#C1542C", carboidrato_g: "#D9A441", gordura_g: "#6B7A3A" };
-    const ROTULOS = { kcal: "Calorias", proteina_g: "Proteína (g)", carboidrato_g: "Carboidrato (g)", gordura_g: "Gordura (g)" };
+    const CORES = { kcal: "#C9463B", proteina_g: "#7A2426", carboidrato_g: "#E2A184", gordura_g: "#7C8B4E", fibra_g: "#455B2E" };
+    const ROTULOS = { kcal: "Calorias", proteina_g: "Proteína", carboidrato_g: "Carboidrato", gordura_g: "Gordura", fibra_g: "Fibra" };
+    const UNIDADE = { kcal: "kcal", proteina_g: "g", carboidrato_g: "g", gordura_g: "g", fibra_g: "g" };
+    const META_CHAVE = { kcal: "kcal_meta", proteina_g: "proteina_meta_g", carboidrato_g: "carboidrato_meta_g", gordura_g: "gordura_meta_g", fibra_g: "fibra_meta_g" };
 
     let ingredienteAtual = null;
     let itensRefeicao = [];
+    let tipoRefeicaoAtual = "Café da manhã";
     let historicoCache = [];
+    let consumidoHoje = totaisZerados();
+    let metaAtivaCache = null;
+    let macroSemanaAtual = "kcal";
+    let diasSemanaCache = [];
+
+    function totaisZerados() {
+      return { kcal: 0, proteina_g: 0, carboidrato_g: 0, gordura_g: 0, fibra_g: 0 };
+    }
 
     // ---------- NAVEGAÇÃO ----------
     document.getElementById("navLancar").addEventListener("click", () => mostrarTela("lancar"));
     document.getElementById("navProgresso").addEventListener("click", () => mostrarTela("progresso"));
     document.getElementById("navHistorico").addEventListener("click", () => mostrarTela("historico"));
+    document.getElementById("navMetas").addEventListener("click", () => mostrarTela("metas"));
 
     function mostrarTela(tela) {
       document.getElementById("viewLancar").style.display = tela === "lancar" ? "block" : "none";
       document.getElementById("viewProgresso").style.display = tela === "progresso" ? "block" : "none";
       document.getElementById("viewHistorico").style.display = tela === "historico" ? "block" : "none";
-      document.getElementById("navLancar").classList.toggle("ativo", tela === "lancar");
-      document.getElementById("navProgresso").classList.toggle("ativo", tela === "progresso");
-      document.getElementById("navHistorico").classList.toggle("ativo", tela === "historico");
+      document.getElementById("viewMetas").style.display = tela === "metas" ? "block" : "none";
+      ["navLancar", "navProgresso", "navHistorico", "navMetas"].forEach((id) => {
+        document.getElementById(id).classList.toggle("ativo", id === "nav" + tela.charAt(0).toUpperCase() + tela.slice(1));
+      });
       if (tela === "historico") carregarHistorico();
-      if (tela === "progresso") {
-        carregarProgressoDoDia();
-        carregarProgressoSemanal();
-      }
+      if (tela === "progresso") carregarProgresso();
+      if (tela === "metas") carregarListaMetas();
     }
 
-    // ---------- FAVORITOS ----------
+    // ---------- META ATIVA (por data) ----------
+    async function buscarMetaAtiva() {
+      const hoje = new Date().toISOString().slice(0, 10);
+      const { data, error } = await supabaseClient
+        .from("metas")
+        .select("*")
+        .eq("tipo", "diaria")
+        .lte("data_inicio", hoje)
+        .or(`data_fim.is.null,data_fim.gte.${hoje}`)
+        .order("data_inicio", { ascending: false })
+        .limit(1);
+
+      if (error || !data || data.length === 0) return null;
+      return data[0];
+    }
+
+    // ---------- CONSUMIDO HOJE ----------
+    async function calcularConsumidoHoje() {
+      const inicioHoje = new Date();
+      inicioHoje.setHours(0, 0, 0, 0);
+
+      const { data: refeicoesHoje, error: erroRef } = await supabaseClient
+        .from("refeicoes")
+        .select("id")
+        .gte("data_hora", inicioHoje.toISOString());
+
+      if (erroRef || refeicoesHoje.length === 0) return totaisZerados();
+
+      const ids = refeicoesHoje.map((r) => r.id);
+      const { data: itens, error: erroItens } = await supabaseClient
+        .from("itens_refeicao")
+        .select("quantidade_g, ingredientes(kcal, proteina_g, carboidrato_g, gordura_g, fibra_g)")
+        .in("refeicao_id", ids);
+
+      if (erroItens) return totaisZerados();
+
+      const totais = totaisZerados();
+      itens.forEach((item) => {
+        const fator = item.quantidade_g / 100;
+        const ing = item.ingredientes;
+        totais.kcal += (ing?.kcal || 0) * fator;
+        totais.proteina_g += (ing?.proteina_g || 0) * fator;
+        totais.carboidrato_g += (ing?.carboidrato_g || 0) * fator;
+        totais.gordura_g += (ing?.gordura_g || 0) * fator;
+        totais.fibra_g += (ing?.fibra_g || 0) * fator;
+      });
+      return totais;
+    }
+
+    async function inicializarDadosLancar() {
+      metaAtivaCache = await buscarMetaAtiva();
+      consumidoHoje = await calcularConsumidoHoje();
+      renderizarLista();
+    }
+
+    // ---------- FAVORITOS (bottom sheet) ----------
+    document.getElementById("btnToggleFavoritos").addEventListener("click", abrirFavoritos);
+    document.getElementById("backdropFavoritos").addEventListener("click", fecharFavoritos);
+
+    function abrirFavoritos() {
+      document.getElementById("painelFavoritos").classList.add("aberto");
+      document.getElementById("backdropFavoritos").classList.add("aberto");
+      carregarFavoritos();
+    }
+    function fecharFavoritos() {
+      document.getElementById("painelFavoritos").classList.remove("aberto");
+      document.getElementById("backdropFavoritos").classList.remove("aberto");
+    }
+
     async function carregarFavoritos() {
-      const div = document.getElementById("favoritos");
+      const div = document.getElementById("listaFavoritosSheet");
+      div.innerHTML = "Carregando...";
 
       const { data, error } = await supabaseClient
         .from("refeicoes")
@@ -384,8 +513,12 @@
       div.innerHTML = "";
       data.forEach((fav) => {
         const item = document.createElement("div");
+        item.className = "item-fav";
         item.textContent = "⭐ " + fav.nome;
-        item.onclick = () => carregarItensDoFavorito(fav.id, fav.nome, fav.tipo_refeicao);
+        item.onclick = () => {
+          carregarItensDoFavorito(fav.id, fav.nome, fav.tipo_refeicao);
+          fecharFavoritos();
+        };
         div.appendChild(item);
       });
     }
@@ -393,7 +526,7 @@
     async function carregarItensDoFavorito(refeicaoId, nome, tipoRefeicao) {
       const { data, error } = await supabaseClient
         .from("itens_refeicao")
-        .select("quantidade_g, ingredientes(id, nome, kcal, proteina_g, carboidrato_g, gordura_g)")
+        .select("quantidade_g, ingredientes(id, nome, kcal, proteina_g, carboidrato_g, gordura_g, fibra_g)")
         .eq("refeicao_id", refeicaoId);
 
       if (error) { alert("Erro ao carregar favorito: " + error.message); return; }
@@ -409,15 +542,28 @@
           proteina_g: (ing.proteina_g || 0) * fator,
           carboidrato_g: (ing.carboidrato_g || 0) * fator,
           gordura_g: (ing.gordura_g || 0) * fator,
+          fibra_g: (ing.fibra_g || 0) * fator,
         };
       });
 
       document.getElementById("nomePrato").value = nome;
-      if (tipoRefeicao) document.getElementById("tipoRefeicao").value = tipoRefeicao;
+      if (tipoRefeicao) selecionarPillHorario(tipoRefeicao);
       renderizarLista();
     }
 
-    // ---------- BUSCA DE INGREDIENTES ----------
+    // ---------- PILLS DE HORÁRIO ----------
+    document.querySelectorAll("#pillsHorario button").forEach((btn) => {
+      btn.addEventListener("click", () => selecionarPillHorario(btn.dataset.valor));
+    });
+
+    function selecionarPillHorario(valor) {
+      tipoRefeicaoAtual = valor;
+      document.querySelectorAll("#pillsHorario button").forEach((b) => {
+        b.classList.toggle("ativo", b.dataset.valor === valor);
+      });
+    }
+
+    // ---------- BUSCA DE INGREDIENTES (cards) ----------
     document.getElementById("busca").addEventListener("input", async (e) => {
       const termo = e.target.value.trim();
       const div = document.getElementById("sugestoes");
@@ -425,7 +571,7 @@
 
       const { data, error } = await supabaseClient
         .from("ingredientes")
-        .select("id, nome, kcal, proteina_g, carboidrato_g, gordura_g")
+        .select("id, nome, kcal, proteina_g, carboidrato_g, gordura_g, fibra_g")
         .ilike("nome", `%${termo}%`)
         .limit(10);
 
@@ -433,10 +579,22 @@
 
       div.innerHTML = "";
       data.forEach((ing) => {
-        const item = document.createElement("div");
-        item.textContent = ing.nome;
-        item.onclick = () => selecionarIngrediente(ing);
-        div.appendChild(item);
+        const card = document.createElement("div");
+        card.className = "card-ingrediente";
+        card.innerHTML = `
+          <div class="info">
+            <strong>${ing.nome}</strong>
+            <div class="sub">${(ing.kcal || 0).toFixed(0)} kcal · P${(ing.proteina_g || 0).toFixed(1)} C${(ing.carboidrato_g || 0).toFixed(1)} G${(ing.gordura_g || 0).toFixed(1)} Fib${(ing.fibra_g || 0).toFixed(1)} /100g</div>
+          </div>
+          <button class="btn-add-rapido">+100g</button>
+        `;
+        card.querySelector(".info").onclick = () => selecionarIngrediente(ing);
+        card.querySelector(".btn-add-rapido").onclick = () => {
+          adicionarIngredienteComQuantidade(ing, 100);
+          document.getElementById("sugestoes").innerHTML = "";
+          document.getElementById("busca").value = "";
+        };
+        div.appendChild(card);
       });
     });
 
@@ -444,6 +602,7 @@
       ingredienteAtual = ing;
       document.getElementById("ingredienteSelecionado").textContent = "Selecionado: " + ing.nome;
       document.getElementById("selecao").style.display = "block";
+      document.getElementById("quantidade").value = "100";
       document.getElementById("sugestoes").innerHTML = "";
       document.getElementById("busca").value = "";
     }
@@ -454,32 +613,40 @@
         alert("Escolha um ingrediente e uma quantidade válida.");
         return;
       }
-
-      const fator = qtd / 100;
-      itensRefeicao.push({
-        ingrediente_id: ingredienteAtual.id,
-        nome: ingredienteAtual.nome,
-        quantidade_g: qtd,
-        kcal: (ingredienteAtual.kcal || 0) * fator,
-        proteina_g: (ingredienteAtual.proteina_g || 0) * fator,
-        carboidrato_g: (ingredienteAtual.carboidrato_g || 0) * fator,
-        gordura_g: (ingredienteAtual.gordura_g || 0) * fator,
-      });
-
+      adicionarIngredienteComQuantidade(ingredienteAtual, qtd);
       ingredienteAtual = null;
       document.getElementById("selecao").style.display = "none";
-      document.getElementById("quantidade").value = "";
-      renderizarLista();
     });
 
-    function calcularTotais() {
+    function adicionarIngredienteComQuantidade(ing, qtd) {
+      const fator = qtd / 100;
+      itensRefeicao.push({
+        ingrediente_id: ing.id,
+        nome: ing.nome,
+        quantidade_g: qtd,
+        kcal: (ing.kcal || 0) * fator,
+        proteina_g: (ing.proteina_g || 0) * fator,
+        carboidrato_g: (ing.carboidrato_g || 0) * fator,
+        gordura_g: (ing.gordura_g || 0) * fator,
+        fibra_g: (ing.fibra_g || 0) * fator,
+      });
+      renderizarLista();
+    }
+
+    function calcularTotaisDraft() {
       return itensRefeicao.reduce((totais, item) => {
         totais.kcal += item.kcal;
         totais.proteina_g += item.proteina_g;
         totais.carboidrato_g += item.carboidrato_g;
         totais.gordura_g += item.gordura_g;
+        totais.fibra_g += item.fibra_g;
         return totais;
-      }, { kcal: 0, proteina_g: 0, carboidrato_g: 0, gordura_g: 0 });
+      }, totaisZerados());
+    }
+
+    function removerItem(index) {
+      itensRefeicao.splice(index, 1);
+      renderizarLista();
     }
 
     function renderizarLista() {
@@ -493,29 +660,39 @@
         ul.appendChild(li);
       });
 
-      const totais = calcularTotais();
-      document.getElementById("totalKcal").textContent = totais.kcal.toFixed(0) + " kcal";
-      document.getElementById("totalMacros").textContent =
-        `P: ${totais.proteina_g.toFixed(1)}g · C: ${totais.carboidrato_g.toFixed(1)}g · G: ${totais.gordura_g.toFixed(1)}g`;
+      document.getElementById("tituloItens").textContent = `Nova refeição · ${itensRefeicao.length} ${itensRefeicao.length === 1 ? "item" : "itens"}`;
+      if (itensRefeicao.length === 0) {
+        ul.innerHTML = `<p class="vazio">Nenhum ingrediente ainda — busque acima pra começar.</p>`;
+      }
+
+      const draft = calcularTotaisDraft();
+
+      document.getElementById("draftInfo").textContent =
+        `Esta refeição: C ${draft.carboidrato_g.toFixed(0)}g · G ${draft.gordura_g.toFixed(0)}g · Fib ${draft.fibra_g.toFixed(0)}g`;
+
+      const divCards = document.getElementById("cardsMeta");
+      if (!metaAtivaCache) {
+        divCards.innerHTML = `<p class="vazio" style="grid-column:1/-1;">Nenhuma meta ativa. Cadastre uma na aba Metas.</p>`;
+        return;
+      }
+
+      divCards.innerHTML =
+        cartaoMetaMacro("kcal", consumidoHoje.kcal + draft.kcal, metaAtivaCache.kcal_meta) +
+        cartaoMetaMacro("proteina_g", consumidoHoje.proteina_g + draft.proteina_g, metaAtivaCache.proteina_meta_g);
     }
 
-    function removerItem(index) {
-      itensRefeicao.splice(index, 1);
-      renderizarLista();
-    }
-
-    // chave: "kcal" | "proteina_g" | "carboidrato_g" | "gordura_g" — usa a cor certa por macro
-    function barraProgresso(chave, valor, meta) {
+    function cartaoMetaMacro(chave, valor, meta) {
+      const excedeu = meta ? valor > meta : false;
+      const status = !meta ? "Sem meta" : (excedeu ? "Meta ultrapassada" : "Dentro da meta");
       const percentual = meta ? Math.min((valor / meta) * 100, 100) : 0;
       return `
-        <div class="linha-progresso">
-          <div class="rotulo">
+        <div class="card-meta-macro ${excedeu ? "excedido" : ""}">
+          <div class="linha-titulo">
             <span>${ROTULOS[chave]}</span>
-            <span>${valor.toFixed(1)} / ${meta ?? "?"}</span>
+            <span class="status">${status}</span>
           </div>
-          <div class="barra-fundo">
-            <div class="barra-preenchida" style="width:${percentual}%; background:${CORES[chave]}"></div>
-          </div>
+          <div class="numero">${valor.toFixed(0)} <small>/ ${meta ?? "?"}${UNIDADE[chave]}</small></div>
+          <div class="barra-fundo"><div class="barra-preenchida" style="width:${percentual}%"></div></div>
         </div>
       `;
     }
@@ -526,7 +703,6 @@
         return;
       }
 
-      const tipoRefeicao = document.getElementById("tipoRefeicao").value;
       const nomePrato = document.getElementById("nomePrato").value.trim();
       const marcarFavorito = document.getElementById("marcarFavorito").checked;
 
@@ -537,7 +713,7 @@
 
       const { data: refeicao, error: erroRefeicao } = await supabaseClient
         .from("refeicoes")
-        .insert({ nome: nomePrato, tipo_refeicao: tipoRefeicao, is_favorito: marcarFavorito })
+        .insert({ nome: nomePrato, tipo_refeicao: tipoRefeicaoAtual, is_favorito: marcarFavorito })
         .select()
         .single();
 
@@ -561,195 +737,170 @@
         return;
       }
 
-      document.getElementById("mensagemSalvar").textContent = "Refeição salva. Veja o progresso na aba Progresso.";
+      document.getElementById("mensagemSalvar").textContent = "Refeição salva!";
+
+      const draft = calcularTotaisDraft();
+      consumidoHoje.kcal += draft.kcal;
+      consumidoHoje.proteina_g += draft.proteina_g;
+      consumidoHoje.carboidrato_g += draft.carboidrato_g;
+      consumidoHoje.gordura_g += draft.gordura_g;
+      consumidoHoje.fibra_g += draft.fibra_g;
 
       itensRefeicao = [];
       document.getElementById("marcarFavorito").checked = false;
       document.getElementById("nomePrato").value = "";
       renderizarLista();
-      carregarFavoritos();
     });
 
-    // ---------- PROGRESSO DO DIA ----------
-    async function carregarProgressoDoDia() {
-      const divDiario = document.getElementById("progressoDiario");
-      const divPorTipo = document.getElementById("progressoPorTipo");
-      divDiario.innerHTML = "Carregando...";
-      divPorTipo.innerHTML = "";
+    // ---------- PROGRESSO ----------
+    document.getElementById("toggleDia").addEventListener("click", () => alternarProgresso("dia"));
+    document.getElementById("toggleSemana").addEventListener("click", () => alternarProgresso("semana"));
 
-      const inicioHoje = new Date();
-      inicioHoje.setHours(0, 0, 0, 0);
-
-      const { data: refeicoesHoje, error: erroRef } = await supabaseClient
-        .from("refeicoes")
-        .select("id, tipo_refeicao")
-        .gte("data_hora", inicioHoje.toISOString());
-
-      if (erroRef) { divDiario.innerHTML = "<p>Erro ao carregar progresso.</p>"; return; }
-
-      if (refeicoesHoje.length === 0) {
-        divDiario.innerHTML = "<p>Nenhuma refeição lançada hoje ainda.</p>";
-        divPorTipo.innerHTML = "";
-        return;
-      }
-
-      const idsHoje = refeicoesHoje.map((r) => r.id);
-      const tipoPorId = Object.fromEntries(refeicoesHoje.map((r) => [r.id, r.tipo_refeicao]));
-
-      const { data: itens, error: erroItens } = await supabaseClient
-        .from("itens_refeicao")
-        .select("refeicao_id, quantidade_g, ingredientes(kcal, proteina_g, carboidrato_g, gordura_g)")
-        .in("refeicao_id", idsHoje);
-
-      if (erroItens) { divDiario.innerHTML = "<p>Erro ao carregar itens de hoje.</p>"; return; }
-
-      const totalDia = { kcal: 0, proteina_g: 0, carboidrato_g: 0, gordura_g: 0 };
-      const totalPorTipo = {};
-
-      itens.forEach((item) => {
-        const fator = item.quantidade_g / 100;
-        const ing = item.ingredientes;
-        const tipo = tipoPorId[item.refeicao_id] || "Sem horário";
-
-        if (!totalPorTipo[tipo]) totalPorTipo[tipo] = { kcal: 0, proteina_g: 0, carboidrato_g: 0, gordura_g: 0 };
-
-        const valores = {
-          kcal: (ing?.kcal || 0) * fator,
-          proteina_g: (ing?.proteina_g || 0) * fator,
-          carboidrato_g: (ing?.carboidrato_g || 0) * fator,
-          gordura_g: (ing?.gordura_g || 0) * fator,
-        };
-
-        totalDia.kcal += valores.kcal;
-        totalDia.proteina_g += valores.proteina_g;
-        totalDia.carboidrato_g += valores.carboidrato_g;
-        totalDia.gordura_g += valores.gordura_g;
-
-        totalPorTipo[tipo].kcal += valores.kcal;
-        totalPorTipo[tipo].proteina_g += valores.proteina_g;
-        totalPorTipo[tipo].carboidrato_g += valores.carboidrato_g;
-        totalPorTipo[tipo].gordura_g += valores.gordura_g;
-      });
-
-      const { data: metaDia } = await supabaseClient
-        .from("metas")
-        .select("*")
-        .eq("tipo", "diaria")
-        .maybeSingle();
-
-      if (!metaDia) {
-        divDiario.innerHTML = "<p>Nenhuma meta diária cadastrada.</p>";
-      } else {
-        divDiario.innerHTML = `
-          <div class="progresso-bloco">
-            ${barraProgresso("kcal", totalDia.kcal, metaDia.kcal_meta)}
-            ${barraProgresso("proteina_g", totalDia.proteina_g, metaDia.proteina_meta_g)}
-            ${barraProgresso("carboidrato_g", totalDia.carboidrato_g, metaDia.carboidrato_meta_g)}
-            ${barraProgresso("gordura_g", totalDia.gordura_g, metaDia.gordura_meta_g)}
-          </div>
-        `;
-      }
-
-      const { data: metasPorTipo } = await supabaseClient
-        .from("metas")
-        .select("*")
-        .eq("tipo", "refeicao");
-
-      const metaPorNome = Object.fromEntries((metasPorTipo || []).map((m) => [m.nome_refeicao, m]));
-
-      divPorTipo.innerHTML = "";
-      Object.entries(totalPorTipo).forEach(([tipo, totais]) => {
-        const meta = metaPorNome[tipo];
-        const bloco = document.createElement("div");
-        bloco.className = "progresso-bloco";
-        bloco.innerHTML = `
-          <h4>${tipo}</h4>
-          ${meta
-            ? barraProgresso("kcal", totais.kcal, meta.kcal_meta) +
-              barraProgresso("proteina_g", totais.proteina_g, meta.proteina_meta_g) +
-              barraProgresso("carboidrato_g", totais.carboidrato_g, meta.carboidrato_meta_g) +
-              barraProgresso("gordura_g", totais.gordura_g, meta.gordura_meta_g)
-            : "<p>Sem meta cadastrada para essa refeição.</p>"}
-        `;
-        divPorTipo.appendChild(bloco);
-      });
+    function alternarProgresso(modo) {
+      document.getElementById("progressoDia").style.display = modo === "dia" ? "block" : "none";
+      document.getElementById("progressoSemana").style.display = modo === "semana" ? "block" : "none";
+      document.getElementById("toggleDia").classList.toggle("ativo", modo === "dia");
+      document.getElementById("toggleSemana").classList.toggle("ativo", modo === "semana");
     }
 
-    // ---------- PROGRESSO SEMANAL ----------
-    async function carregarProgressoSemanal() {
-      const div = document.getElementById("progressoSemanal");
-      div.innerHTML = "Carregando...";
+    document.querySelectorAll("#tabsMacro button").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        macroSemanaAtual = btn.dataset.macro;
+        document.querySelectorAll("#tabsMacro button").forEach((b) => b.classList.toggle("ativo", b === btn));
+        renderizarGraficoSemanal();
+      });
+    });
 
+    function barraProgresso(chave, valor, meta) {
+      const percentual = meta ? Math.min((valor / meta) * 100, 100) : 0;
+      const falta = meta ? Math.max(meta - valor, 0) : null;
+      return `
+        <div class="linha-progresso" style="margin-bottom:14px;">
+          <div style="display:flex; justify-content:space-between; font-size:13px; font-weight:600; margin-bottom:4px;">
+            <span>${ROTULOS[chave]}</span>
+            <span>${valor.toFixed(1)} / ${meta ?? "?"}${UNIDADE[chave]}</span>
+          </div>
+          <div class="barra-fundo" style="height:9px;">
+            <div class="barra-preenchida" style="width:${percentual}%; background:${CORES[chave]}"></div>
+          </div>
+          ${falta !== null ? `<div style="font-size:12px; color:var(--ink-soft); margin-top:3px;">Faltam ${falta.toFixed(1)}${UNIDADE[chave]}</div>` : ""}
+        </div>
+      `;
+    }
+
+    async function carregarProgresso() {
+      const hoje = new Date();
+      document.getElementById("dataHoje").textContent =
+        "Hoje, " + hoje.toLocaleDateString("pt-BR", { day: "2-digit", month: "long" });
+
+      metaAtivaCache = await buscarMetaAtiva();
+      const totalHoje = await calcularConsumidoHoje();
+
+      const divDia = document.getElementById("progressoDia");
+      if (!metaAtivaCache) {
+        divDia.innerHTML = `<p class="vazio">Nenhuma meta diária ativa. Cadastre uma na aba Metas.</p>`;
+      } else {
+        divDia.innerHTML = `<div class="card-grafico">` +
+          ["kcal", "proteina_g", "carboidrato_g", "gordura_g", "fibra_g"]
+            .map((chave) => barraProgresso(chave, totalHoje[chave], metaAtivaCache[META_CHAVE[chave]]))
+            .join("") +
+          `</div>`;
+      }
+
+      await carregarDadosSemana();
+      renderizarGraficoSemanal();
+    }
+
+    async function carregarDadosSemana() {
       const dias = [];
       for (let i = 6; i >= 0; i--) {
         const d = new Date();
         d.setHours(0, 0, 0, 0);
         d.setDate(d.getDate() - i);
-        dias.push(d);
+        dias.push({ data: d, totais: totaisZerados() });
       }
 
-      const inicioSemana = dias[0];
+      const inicioSemana = dias[0].data;
 
       const { data: refeicoesSemana, error: erroRef } = await supabaseClient
         .from("refeicoes")
         .select("id, data_hora")
         .gte("data_hora", inicioSemana.toISOString());
 
-      if (erroRef) { div.innerHTML = "<p>Erro ao carregar semana.</p>"; return; }
-
-      if (refeicoesSemana.length === 0) {
-        div.innerHTML = "<p>Nenhuma refeição lançada nos últimos 7 dias.</p>";
-        return;
-      }
+      if (erroRef || refeicoesSemana.length === 0) { diasSemanaCache = dias; return; }
 
       const idsSemana = refeicoesSemana.map((r) => r.id);
-      const diaPorId = Object.fromEntries(
-        refeicoesSemana.map((r) => [r.id, new Date(r.data_hora).toDateString()])
-      );
+      const diaPorId = Object.fromEntries(refeicoesSemana.map((r) => [r.id, new Date(r.data_hora).toDateString()]));
 
       const { data: itens, error: erroItens } = await supabaseClient
         .from("itens_refeicao")
-        .select("refeicao_id, quantidade_g, ingredientes(kcal, proteina_g, carboidrato_g, gordura_g)")
+        .select("refeicao_id, quantidade_g, ingredientes(kcal, proteina_g, carboidrato_g, gordura_g, fibra_g)")
         .in("refeicao_id", idsSemana);
 
-      if (erroItens) { div.innerHTML = "<p>Erro ao carregar itens da semana.</p>"; return; }
+      if (erroItens) { diasSemanaCache = dias; return; }
 
-      const totalPorDia = {};
+      const mapaDia = Object.fromEntries(dias.map((d) => [d.data.toDateString(), d]));
+
       itens.forEach((item) => {
         const fator = item.quantidade_g / 100;
         const ing = item.ingredientes;
         const chaveDia = diaPorId[item.refeicao_id];
-
-        if (!totalPorDia[chaveDia]) totalPorDia[chaveDia] = { kcal: 0, proteina_g: 0, carboidrato_g: 0, gordura_g: 0 };
-
-        totalPorDia[chaveDia].kcal += (ing?.kcal || 0) * fator;
-        totalPorDia[chaveDia].proteina_g += (ing?.proteina_g || 0) * fator;
-        totalPorDia[chaveDia].carboidrato_g += (ing?.carboidrato_g || 0) * fator;
-        totalPorDia[chaveDia].gordura_g += (ing?.gordura_g || 0) * fator;
+        const alvo = mapaDia[chaveDia];
+        if (!alvo) return;
+        alvo.totais.kcal += (ing?.kcal || 0) * fator;
+        alvo.totais.proteina_g += (ing?.proteina_g || 0) * fator;
+        alvo.totais.carboidrato_g += (ing?.carboidrato_g || 0) * fator;
+        alvo.totais.gordura_g += (ing?.gordura_g || 0) * fator;
+        alvo.totais.fibra_g += (ing?.fibra_g || 0) * fator;
       });
 
-      const { data: metaDia } = await supabaseClient
-        .from("metas")
-        .select("*")
-        .eq("tipo", "diaria")
-        .maybeSingle();
+      diasSemanaCache = dias;
+    }
 
-      div.innerHTML = "";
-      dias.forEach((d) => {
-        const chave = d.toDateString();
-        const totais = totalPorDia[chave] || { kcal: 0, proteina_g: 0, carboidrato_g: 0, gordura_g: 0 };
-        const rotulo = d.toLocaleDateString("pt-BR", { weekday: "short", day: "2-digit", month: "2-digit" });
+    function renderizarGraficoSemanal() {
+      const chave = macroSemanaAtual;
+      const meta = metaAtivaCache ? metaAtivaCache[META_CHAVE[chave]] : null;
+      const cor = CORES[chave];
 
-        const bloco = document.createElement("div");
-        bloco.className = "progresso-bloco";
-        bloco.innerHTML = `
-          <h4>${rotulo}</h4>
-          ${metaDia
-            ? barraProgresso("kcal", totais.kcal, metaDia.kcal_meta)
-            : `<p>${totais.kcal.toFixed(0)} kcal</p>`}
-        `;
-        div.appendChild(bloco);
+      document.getElementById("tituloMacroGrafico").textContent = ROTULOS[chave].toUpperCase();
+      document.getElementById("metaTextoGrafico").textContent = meta ? `meta ${meta}${UNIDADE[chave]}` : "sem meta";
+      document.getElementById("legendaCor").style.background = cor;
+
+      const hojeStr = new Date().toDateString();
+      const valores = diasSemanaCache.map((d) => d.totais[chave]);
+      const maximo = Math.max(...valores, meta || 0, 1) * 1.15;
+
+      const largura = 480, altura = 200;
+      const margemBaixo = 34, margemTopo = 10;
+      const areaAltura = altura - margemBaixo - margemTopo;
+      const espaco = (largura - 20) / diasSemanaCache.length;
+      const larguraBarra = Math.min(28, espaco * 0.5);
+
+      let barras = "";
+      let rotulosEixo = "";
+
+      diasSemanaCache.forEach((d, i) => {
+        const valor = d.totais[chave];
+        const isHoje = d.data.toDateString() === hojeStr;
+        const alturaBarra = valor > 0 ? (valor / maximo) * areaAltura : 3;
+        const x = 10 + i * espaco + (espaco - larguraBarra) / 2;
+        const y = margemTopo + areaAltura - alturaBarra;
+
+        barras += `<rect x="${x}" y="${y}" width="${larguraBarra}" height="${alturaBarra}" rx="5" fill="${cor}" opacity="${isHoje ? 1 : (valor > 0 ? 0.6 : 0.3)}"/>`;
+
+        const rotulo = isHoje ? "Hoje" : d.data.toLocaleDateString("pt-BR", { weekday: "short" }).replace(".", "");
+        const xTexto = 10 + i * espaco + espaco / 2;
+        rotulosEixo += `<text x="${xTexto}" y="${altura - 12}" font-size="11" text-anchor="middle" style="fill:var(--ink-soft); font-family:Inter, sans-serif;">${rotulo}</text>`;
       });
+
+      let linhaMeta = "";
+      if (meta) {
+        const yMeta = margemTopo + areaAltura - (meta / maximo) * areaAltura;
+        linhaMeta = `<line x1="8" y1="${yMeta}" x2="${largura - 8}" y2="${yMeta}" stroke="${cor}" stroke-width="1.5" stroke-dasharray="5,4"/>`;
+      }
+
+      document.getElementById("graficoSemanalSvg").innerHTML =
+        `<svg viewBox="0 0 ${largura} ${altura}" style="width:100%; height:auto; display:block;">${linhaMeta}${barras}${rotulosEixo}</svg>`;
     }
 
     // ---------- HISTÓRICO ----------
@@ -766,7 +917,7 @@
 
       const { data: itens, error: erroItens } = await supabaseClient
         .from("itens_refeicao")
-        .select("refeicao_id, quantidade_g, ingredientes(nome, kcal, proteina_g, carboidrato_g, gordura_g)");
+        .select("refeicao_id, quantidade_g, ingredientes(nome, kcal, proteina_g, carboidrato_g, gordura_g, fibra_g)");
 
       if (erroItens) { divLista.innerHTML = "<p>Erro ao carregar itens do histórico.</p>"; return; }
 
@@ -776,42 +927,43 @@
       itens.forEach((item) => {
         const fator = item.quantidade_g / 100;
         const ing = item.ingredientes;
-
         if (!totaisPorRefeicao[item.refeicao_id]) {
-          totaisPorRefeicao[item.refeicao_id] = { kcal: 0, proteina_g: 0, carboidrato_g: 0, gordura_g: 0 };
+          totaisPorRefeicao[item.refeicao_id] = totaisZerados();
           ingredientesPorRefeicao[item.refeicao_id] = [];
         }
-
         totaisPorRefeicao[item.refeicao_id].kcal += (ing?.kcal || 0) * fator;
         totaisPorRefeicao[item.refeicao_id].proteina_g += (ing?.proteina_g || 0) * fator;
         totaisPorRefeicao[item.refeicao_id].carboidrato_g += (ing?.carboidrato_g || 0) * fator;
         totaisPorRefeicao[item.refeicao_id].gordura_g += (ing?.gordura_g || 0) * fator;
-
+        totaisPorRefeicao[item.refeicao_id].fibra_g += (ing?.fibra_g || 0) * fator;
         ingredientesPorRefeicao[item.refeicao_id].push(`${item.quantidade_g}g ${ing?.nome || "?"}`);
       });
 
       historicoCache = refeicoes.map((r) => ({
         ...r,
-        totais: totaisPorRefeicao[r.id] || { kcal: 0, proteina_g: 0, carboidrato_g: 0, gordura_g: 0 },
+        totais: totaisPorRefeicao[r.id] || totaisZerados(),
         ingredientesTexto: (ingredientesPorRefeicao[r.id] || []).join(", "),
       }));
 
       if (historicoCache.length === 0) {
-        divLista.innerHTML = "<p>Nenhuma refeição lançada ainda.</p>";
+        divLista.innerHTML = `<p class="vazio">Nenhuma refeição lançada ainda.</p>`;
         return;
       }
 
       divLista.innerHTML = "";
       historicoCache.forEach((r) => {
-        const dataFormatada = new Date(r.data_hora).toLocaleString("pt-BR");
+        const dataFormatada = new Date(r.data_hora).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
         const div = document.createElement("div");
         div.className = "historico-item";
         div.innerHTML = `
-          <strong>${r.nome}</strong> <small>· ${r.tipo_refeicao || "-"}</small><br>
-          <small>${dataFormatada}</small>
-          <div class="macros">${r.totais.kcal.toFixed(0)} kcal · P: ${r.totais.proteina_g.toFixed(1)}g ·
-          C: ${r.totais.carboidrato_g.toFixed(1)}g · G: ${r.totais.gordura_g.toFixed(1)}g</div>
-          <small>${r.ingredientesTexto}</small>
+          <div class="cabecalho">
+            <strong>${r.nome}</strong>
+            <span class="hora">${dataFormatada}</span>
+          </div>
+          <span class="pill-tipo">${r.tipo_refeicao || "-"}</span>
+          <div class="kcal-grande">${r.totais.kcal.toFixed(0)} kcal</div>
+          <div class="macros">P: ${r.totais.proteina_g.toFixed(1)}g · C: ${r.totais.carboidrato_g.toFixed(1)}g · G: ${r.totais.gordura_g.toFixed(1)}g · Fib: ${r.totais.fibra_g.toFixed(1)}g</div>
+          <div class="ingredientes">${r.ingredientesTexto}</div>
         `;
         divLista.appendChild(div);
       });
@@ -823,7 +975,7 @@
         return;
       }
 
-      const cabecalho = ["Data/Hora", "Horário da refeição", "Nome", "Ingredientes", "Kcal", "Proteína (g)", "Carboidrato (g)", "Gordura (g)"];
+      const cabecalho = ["Data/Hora", "Horário da refeição", "Nome", "Ingredientes", "Kcal", "Proteína (g)", "Carboidrato (g)", "Gordura (g)", "Fibra (g)"];
       const linhas = historicoCache.map((r) => [
         new Date(r.data_hora).toLocaleString("pt-BR"),
         r.tipo_refeicao || "",
@@ -833,6 +985,7 @@
         r.totais.proteina_g.toFixed(1),
         r.totais.carboidrato_g.toFixed(1),
         r.totais.gordura_g.toFixed(1),
+        r.totais.fibra_g.toFixed(1),
       ]);
 
       const csv = [cabecalho, ...linhas]
@@ -848,7 +1001,90 @@
       URL.revokeObjectURL(url);
     });
 
-    carregarFavoritos();
+    // ---------- METAS ----------
+    document.getElementById("btnSalvarMeta").addEventListener("click", async () => {
+      const nome = document.getElementById("metaNome").value.trim();
+      const dataInicio = document.getElementById("metaInicio").value;
+      const dataFim = document.getElementById("metaFim").value || null;
+      const kcal = parseFloat(document.getElementById("metaKcal").value) || null;
+      const proteina = parseFloat(document.getElementById("metaProteina").value) || null;
+      const carboidrato = parseFloat(document.getElementById("metaCarboidrato").value) || null;
+      const gordura = parseFloat(document.getElementById("metaGordura").value) || null;
+      const fibra = parseFloat(document.getElementById("metaFibra").value) || null;
+
+      if (!nome || !dataInicio) {
+        alert("Preencha ao menos o nome e a data de início.");
+        return;
+      }
+
+      const { error } = await supabaseClient.from("metas").insert({
+        tipo: "diaria",
+        nome,
+        data_inicio: dataInicio,
+        data_fim: dataFim,
+        kcal_meta: kcal,
+        proteina_meta_g: proteina,
+        carboidrato_meta_g: carboidrato,
+        gordura_meta_g: gordura,
+        fibra_meta_g: fibra,
+      });
+
+      const msg = document.getElementById("mensagemMeta");
+      if (error) {
+        msg.textContent = "Erro ao salvar: " + error.message;
+        return;
+      }
+
+      msg.textContent = "Meta salva!";
+      ["metaNome", "metaInicio", "metaFim", "metaKcal", "metaProteina", "metaCarboidrato", "metaGordura", "metaFibra"]
+        .forEach((id) => document.getElementById(id).value = "");
+      carregarListaMetas();
+    });
+
+    async function carregarListaMetas() {
+      const div = document.getElementById("listaMetas");
+      div.innerHTML = "Carregando...";
+
+      const { data, error } = await supabaseClient
+        .from("metas")
+        .select("*")
+        .eq("tipo", "diaria")
+        .order("data_inicio", { ascending: false });
+
+      if (error) { div.innerHTML = "<p>Erro ao carregar metas.</p>"; return; }
+      if (data.length === 0) { div.innerHTML = `<p class="vazio">Nenhuma meta cadastrada ainda.</p>`; return; }
+
+      div.innerHTML = "";
+      data.forEach((m) => {
+        const periodo = m.data_fim
+          ? `${formatarData(m.data_inicio)} – ${formatarData(m.data_fim)}`
+          : `${formatarData(m.data_inicio)} em diante`;
+
+        const card = document.createElement("div");
+        card.className = "meta-card";
+        card.innerHTML = `
+          <div class="cabecalho">
+            <strong>${m.nome || "Meta"}</strong>
+            <span class="periodo">${periodo}</span>
+          </div>
+          <span class="pill-macro">${m.kcal_meta ?? "?"}kcal</span>
+          <span class="pill-macro">P${m.proteina_meta_g ?? "?"}g</span>
+          <span class="pill-macro">C${m.carboidrato_meta_g ?? "?"}g</span>
+          <span class="pill-macro">G${m.gordura_meta_g ?? "?"}g</span>
+          <span class="pill-macro">Fib${m.fibra_meta_g ?? "?"}g</span>
+        `;
+        div.appendChild(card);
+      });
+    }
+
+    function formatarData(iso) {
+      if (!iso) return "";
+      const [ano, mes, dia] = iso.split("-");
+      return `${dia}/${mes}/${ano}`;
+    }
+
+    // ---------- INICIALIZAÇÃO ----------
+    inicializarDadosLancar();
   </script>
 </body>
 </html>
